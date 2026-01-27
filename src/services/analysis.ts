@@ -39,7 +39,21 @@ function parseIntelligenceResponse(
   try {
     // Remove markdown code blocks if present
     const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+
+    // Handle multiple JSON objects (Haiku sometimes returns separate objects per ticket)
+    let parsed: Record<string, any>;
+    if (cleaned.includes('}\n\n{') || cleaned.includes('}\n{')) {
+      // Multiple JSON objects - merge them
+      parsed = {};
+      const jsonObjects = cleaned.split(/\n\n(?={)/);
+      for (const jsonStr of jsonObjects) {
+        const obj = JSON.parse(jsonStr.trim());
+        Object.assign(parsed, obj);
+      }
+    } else {
+      // Single JSON object
+      parsed = JSON.parse(cleaned);
+    }
 
     const validated: Record<string, IntelligenceOutput> = {};
 

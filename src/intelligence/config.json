@@ -2,7 +2,7 @@
   "intelligence": {
     "name": "Support Ticket Analyzer",
     "version": "support-intel-v1.0.0",
-    "model": "claude-3-5-sonnet-20241022",
+    "model": "claude-3-haiku-20240307",
     "description": "Analyzes customer support tickets for sentiment, churn risk, and actionable insights"
   },
   "processing": {
@@ -93,7 +93,7 @@
   },
   "critique": {
     "enabled": true,
-    "model": "claude-3-5-sonnet-20241022",
+    "model": "claude-3-haiku-20240307",
     "max_tokens": 2048,
     "checks": [
       "consistency between fields",

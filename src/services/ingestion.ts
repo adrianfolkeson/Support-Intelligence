@@ -43,7 +43,7 @@ async function fetchTicketsFromAPI(
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // Normalize response structure (adapt based on your API)
     // Example assumes: { tickets: [...] } or directly [...]

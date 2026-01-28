@@ -1,4 +1,11 @@
-import Anthropic from '@anthropic-ai/sdk';
+/**
+ * Analysis Service med AI Router
+ *
+ * Använder AI Router för att automatiskt välja rätt provider:
+ * - text → Claude (för supportärendeanalys)
+ * - planning/reasoning → z.ai (framtida användning)
+ */
+
 import { query } from '../database/connection';
 import { SupportTicket, AnalysisResult } from '../types';
 import * as dotenv from 'dotenv';
@@ -10,11 +17,10 @@ import { isValidIntelligenceOutput, IntelligenceOutput, IntelligenceCritique } f
 import config from '../intelligence/config.json';
 import { checkAndSendChurnAlerts } from './email-alerts';
 
-dotenv.config();
+// Import AI Router
+import { getAIRouter, TaskType } from '../ai';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+dotenv.config();
 
 const BATCH_SIZE = config.processing.batch_size;
 const RATE_LIMIT_DELAY = config.processing.rate_limit_delay_ms;
@@ -31,7 +37,7 @@ function toTicketInput(ticket: SupportTicket): TicketInput {
 }
 
 /**
- * Parse and validate Claude's response using intelligence schema
+ * Parse and validate AI response using intelligence schema
  */
 function parseIntelligenceResponse(
   response: string,
@@ -41,7 +47,7 @@ function parseIntelligenceResponse(
     // Remove markdown code blocks if present
     const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
-    // Handle multiple JSON objects (Haiku sometimes returns separate objects per ticket)
+    // Handle multiple JSON objects (models sometimes return separate objects per ticket)
     let parsed: Record<string, any>;
     if (cleaned.includes('}\n\n{') || cleaned.includes('}\n{')) {
       // Multiple JSON objects - merge them
@@ -85,9 +91,10 @@ function parseIntelligenceResponse(
 }
 
 /**
- * Call Claude API to analyze a batch of tickets using the intelligence module
+ * Analyze tickets using AI Router
+ * Routes to Claude for 'text' task type
  */
-async function analyzeBatchWithClaude(
+async function analyzeBatchWithRouter(
   tickets: SupportTicket[]
 ): Promise<Record<string, IntelligenceOutput>> {
   // Convert to intelligence input format
@@ -97,32 +104,38 @@ async function analyzeBatchWithClaude(
   const prompt = buildAnalysisPrompt(ticketInputs);
 
   try {
-    // Primary analysis pass
-    const message = await anthropic.messages.create({
-      model: config.intelligence.model,
-      max_tokens: config.processing.max_tokens,
+    // Get AI router instance
+    const router = getAIRouter();
+
+    console.log('AI Router: Routing ticket analysis to Claude (text task)');
+
+    // Use router to get analysis (text task → Claude)
+    const response = await router.route({
       messages: [
         {
           role: 'user',
           content: prompt,
         },
       ],
+      taskType: 'text' as TaskType, // Support ticket analysis = text task
+      maxTokens: config.processing.max_tokens,
     });
 
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+    console.log(`AI Router: Used ${response.provider} (${response.model})`);
 
     // Parse and validate response
-    const analyses = parseIntelligenceResponse(responseText, tickets.length);
+    const analyses = parseIntelligenceResponse(response.content, tickets.length);
 
     return analyses;
   } catch (error) {
-    console.error('Intelligence analysis error:', error);
+    console.error('AI Router analysis error:', error);
     throw error;
   }
 }
 
 /**
- * Run critique pass on analyses (second Claude call for quality assurance)
+ * Run critique pass using AI Router
+ * Uses Claude for critique/quality assurance
  */
 async function critiqueAnalyses(
   tickets: SupportTicket[],
@@ -147,21 +160,26 @@ async function critiqueAnalyses(
   const critiquePrompt = buildCritiquePrompt(ticketInputs, analyses);
 
   try {
-    const message = await anthropic.messages.create({
-      model: config.critique.model,
-      max_tokens: config.critique.max_tokens,
+    const router = getAIRouter();
+
+    console.log('AI Router: Routing critique to Claude (reasoning task)');
+
+    // Use router for critique (reasoning task → could be z.ai in future)
+    const response = await router.route({
       messages: [
         {
           role: 'user',
           content: critiquePrompt,
         },
       ],
+      taskType: 'reasoning' as TaskType,
+      maxTokens: config.critique.max_tokens,
     });
 
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+    console.log(`AI Router: Used ${response.provider} (${response.model})`);
 
     // Parse critique response
-    const cleaned = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const cleaned = response.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const parsed = JSON.parse(cleaned);
 
     return parsed;
@@ -287,11 +305,12 @@ async function getUnanalyzedTickets(organizationId: string, limit: number): Prom
 }
 
 /**
- * Main analysis function
+ * Main analysis function with AI Router
  */
 export async function analyzeTickets(organizationId: string): Promise<AnalysisResult> {
   try {
     console.log(`Starting ticket analysis for organization: ${organizationId}`);
+    console.log(`Using AI Router for provider selection`);
 
     let totalAnalyzed = 0;
     const errors: string[] = [];
@@ -308,10 +327,10 @@ export async function analyzeTickets(organizationId: string): Promise<AnalysisRe
       console.log(`Analyzing batch of ${tickets.length} tickets...`);
 
       try {
-        // Primary analysis pass
-        const analyses = await analyzeBatchWithClaude(tickets);
+        // Primary analysis pass (using AI Router → Claude)
+        const analyses = await analyzeBatchWithRouter(tickets);
 
-        // Critique pass (quality assurance)
+        // Critique pass (using AI Router → z.ai or Claude)
         const critiques = await critiqueAnalyses(tickets, analyses);
 
         // Save each analysis with critique
@@ -374,7 +393,7 @@ if (require.main === module) {
   const orgId = process.argv[2];
 
   if (!orgId) {
-    console.error('Usage: node analysis.js <organization_id>');
+    console.error('Usage: node analysis-with-router.js <organization_id>');
     process.exit(1);
   }
 

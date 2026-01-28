@@ -1,0 +1,134 @@
+import { Router, Request, Response } from 'express';
+import { query } from '../../database/connection';
+import {
+  createCheckoutSession,
+  createBillingPortalSession,
+  handleWebhookEvent,
+  hasActiveSubscription,
+} from '../../services/stripe-service';
+
+const router = Router();
+
+/**
+ * POST /api/organizations/:id/create-checkout
+ * Create a Stripe checkout session
+ */
+router.post('/organizations/:id/create-checkout', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Get organization name
+    const orgResult = await query('SELECT name FROM organizations WHERE id = $1', [id]);
+
+    if (orgResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+
+    const orgName = orgResult.rows[0].name;
+
+    // Create checkout session
+    const successUrl = `${req.headers.origin}/dashboard?org=${id}&checkout=success`;
+    const cancelUrl = `${req.headers.origin}/settings?org=${id}&checkout=canceled`;
+
+    const result = await createCheckoutSession(id, orgName, successUrl, cancelUrl);
+
+    res.json({ checkoutUrl: result.sessionUrl });
+
+  } catch (error: any) {
+    console.error('Create checkout error:', error);
+    res.status(500).json({ error: error.message || 'Failed to create checkout session' });
+  }
+});
+
+/**
+ * POST /api/organizations/:id/create-portal
+ * Create a Stripe billing portal session
+ */
+router.post('/organizations/:id/create-portal', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const returnUrl = `${req.headers.origin}/settings?org=${id}`;
+
+    const result = await createBillingPortalSession(id, returnUrl);
+
+    res.json({ portalUrl: result.portalUrl });
+
+  } catch (error: any) {
+    console.error('Create portal error:', error);
+    res.status(500).json({ error: error.message || 'Failed to create billing portal session' });
+  }
+});
+
+/**
+ * GET /api/organizations/:id/subscription
+ * Get subscription status
+ */
+router.get('/organizations/:id/subscription', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const result = await query(
+      `SELECT
+        subscription_status,
+        subscription_plan,
+        trial_ends_at,
+        subscription_current_period_end
+       FROM organizations
+       WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+
+    const org = result.rows[0];
+    const isActive = await hasActiveSubscription(id);
+
+    res.json({
+      status: org.subscription_status,
+      plan: org.subscription_plan,
+      trialEndsAt: org.trial_ends_at,
+      currentPeriodEnd: org.subscription_current_period_end,
+      isActive,
+    });
+
+  } catch (error: any) {
+    console.error('Get subscription error:', error);
+    res.status(500).json({ error: error.message || 'Failed to get subscription' });
+  }
+});
+
+/**
+ * POST /api/stripe/webhook
+ * Handle Stripe webhook events
+ *
+ * IMPORTANT: This route must use raw body (not JSON parsed)
+ */
+router.post('/stripe/webhook', async (req: Request, res: Response) => {
+  try {
+    const signature = req.headers['stripe-signature'];
+
+    if (!signature) {
+      return res.status(400).json({ error: 'Missing stripe-signature header' });
+    }
+
+    // Get raw body (must be configured in server.ts)
+    const rawBody = (req as any).rawBody;
+
+    if (!rawBody) {
+      return res.status(400).json({ error: 'Missing raw body' });
+    }
+
+    await handleWebhookEvent(rawBody, signature as string);
+
+    res.json({ received: true });
+
+  } catch (error: any) {
+    console.error('Webhook error:', error);
+    res.status(400).json({ error: error.message || 'Webhook failed' });
+  }
+});
+
+export default router;

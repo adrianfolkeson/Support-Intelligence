@@ -1,6 +1,8 @@
 # Support Intelligence
 
-AI-powered support ticket analysis for SaaS founders. Automatically ingests tickets, analyzes them with Claude, and generates executive summaries showing what's broken, what causes churn risk, and what to fix next.
+> AI-powered support ticket analysis that predicts churn before it happens.
+
+A fully automated SaaS ($249/mo) that analyzes customer support tickets using Claude AI to identify frustrated customers, predict churn risk, and send automatic alerts - all without any manual work from your customers.
 
 ## What This Product Does
 

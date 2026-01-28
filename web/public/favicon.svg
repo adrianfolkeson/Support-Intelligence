@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#grad)"/>
+  
+  <!-- Chat bubble / Support icon -->
+  <path d="M25 35 Q25 25 35 25 L65 25 Q75 25 75 35 L75 55 Q75 65 65 65 L45 65 L35 75 L35 65 L35 65 Q25 65 25 55 Z" fill="white"/>
+  
+  <!-- AI brain / Intelligence symbol -->
+  <circle cx="50" cy="45" r="12" fill="url(#grad)"/>
+  <path d="M50 38 L50 52 M43 45 L57 45" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Alert dots -->
+  <circle cx="65" cy="55" r="5" fill="#fbbf24"/>
+</svg>

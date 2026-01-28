@@ -14,9 +14,102 @@ interface ExternalTicket {
   created_at: string;
 }
 
+// =============================================================================
+// SUPPORT PLATFORM INTEGRATION - ZENDESK (ACTIVE)
+// =============================================================================
+
+async function fetchTicketsFromZendesk(apiUrl: string, apiKey: string, since?: Date): Promise<ExternalTicket[]> {
+  let url = `${apiUrl}/api/v2/tickets.json?sort_order=desc`;
+  
+  // Add timestamp filter if provided
+  if (since) {
+    // Zendesk doesn't have a direct "since" param, we'll filter in code
+    console.log(`Filtering tickets since: ${since.toISOString()}`);
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Basic ${Buffer.from(`${apiKey}/token:${apiKey}`).toString('base64')}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Zendesk API failed: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json() as { tickets: any[] };
+  
+  const tickets = data.tickets.map((t) => ({
+    id: String(t.id),
+    customer_id: String(t.requester_id),
+    subject: t.subject,
+    message: t.description || t.subject,
+    status: t.status,
+    priority: t.priority || 'normal',
+    created_at: t.created_at,
+  }));
+
+  // Filter by date if since is provided
+  if (since) {
+    return tickets.filter((t: ExternalTicket) => new Date(t.created_at) > since);
+  }
+
+  return tickets;
+}
+
+// =============================================================================
+// SUPPORT PLATFORM INTEGRATION EXAMPLES (COMMENTED OUT)
+// =============================================================================
+
+// ----- FRESHDESK EXAMPLE -----
+//
+// async function fetchTicketsFromFreshdesk(apiUrl: string, apiKey: string): Promise<ExternalTicket[]> {
+//   const response = await fetch(`${apiUrl}/api/v2/tickets`, {
+//     headers: {
+//       'Authorization': `Basic ${Buffer.from(`${apiKey}:X`).toString('base64')}`,
+//       'Content-Type': 'application/json',
+//     },
+//   });
+//   const tickets = await response.json();
+//   return tickets.map((t: any) => ({
+//     id: String(t.id),
+//     customer_id: String(t.requester_id),
+//     subject: t.subject,
+//     message: t.description_text || t.subject,
+//     status: t.status === 2 ? 'open' : t.status === 3 ? 'closed' : 'open',
+//     priority: t.priority === 1 ? 'low' : t.priority === 2 ? 'medium' : t.priority === 3 ? 'high' : 'urgent',
+//     created_at: new Date(t.created_at).toISOString(),
+//   }));
+// }
+
+// ----- INTERCOM EXAMPLE -----
+//
+// async function fetchTicketsFromIntercom(apiUrl: string, apiKey: string): Promise<ExternalTicket[]> {
+//   const response = await fetch(`${apiUrl}/conversations`, {
+//     headers: {
+//       'Authorization': `Bearer ${apiKey}`,
+//       'Accept': 'application/json',
+//     },
+//   });
+//   const data = await response.json();
+//   return data.conversations.map((c: any) => ({
+//     id: c.id,
+//     customer_id: c.source.author.id,
+//     subject: c.source.subject || 'Intercom Conversation',
+//     message: c.source.body || '',
+//     status: c.state,
+//     priority: 'medium',
+//     created_at: new Date(c.created_at * 1000).toISOString(),
+//   }));
+// }
+
+// =============================================================================
+// DEFAULT: ZENDESK INTEGRATION (Active)
+// =============================================================================
+
 /**
- * Fetch tickets from external API
- * Adapt this function based on your specific support ticket provider
+ * Fetch tickets from Zendesk API
  */
 async function fetchTicketsFromAPI(
   apiUrl: string,

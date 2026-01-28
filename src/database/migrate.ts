@@ -1,6 +1,6 @@
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 import * as path from 'path';
-import { query, closePool } from './connection';
+import { query, closePool, checkHealth } from './connection';
 
 const MIGRATIONS_DIR = path.join(__dirname, '../../migrations');
 
@@ -21,7 +21,9 @@ async function getExecutedMigrations(): Promise<string[]> {
 
 async function executeMigration(filename: string) {
   const filePath = path.join(MIGRATIONS_DIR, filename);
-  const sql = fs.readFileSync(filePath, 'utf8');
+  
+  // Use async file reading
+  const sql = await fs.readFile(filePath, 'utf8');
 
   console.log(`Executing migration: ${filename}`);
 
@@ -38,12 +40,20 @@ async function executeMigration(filename: string) {
 async function runMigrations() {
   try {
     console.log('Starting database migrations...');
+    
+    // Check database health first
+    const health = await checkHealth();
+    if (!health.healthy) {
+      console.error('Database health check failed:', health.error);
+      process.exit(1);
+    }
+    console.log(`Database health check passed (latency: ${health.latency}ms)`);
 
     await createMigrationsTable();
 
-    const files = fs.readdirSync(MIGRATIONS_DIR)
-      .filter((f) => f.endsWith('.sql'))
-      .sort();
+    // Use async readdir
+    const files = await fs.readdir(MIGRATIONS_DIR)
+      .then(f => f.filter((f) => f.endsWith('.sql')).sort());
 
     const executed = await getExecutedMigrations();
     const pending = files.filter((f) => !executed.includes(f));

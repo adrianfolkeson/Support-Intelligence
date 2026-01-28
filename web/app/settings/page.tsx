@@ -18,19 +18,19 @@ export default function SettingsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [hasCredentials, setHasCredentials] = useState(false);
-  const [subscription, setSubscription] = useState<any>(null);
-  const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
+  // Prevent SSR issues
   useEffect(() => {
-    if (orgId) {
-      loadSettings();
-      loadSubscription();
-    }
-  }, [orgId]);
+    setIsClient(true);
+  }, []);
 
   const loadSettings = async () => {
+    if (!orgId || !isClient) return;
+    
     try {
-      const response = await fetch(`http://localhost:3001/api/organizations/${orgId}/settings`);
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const response = await fetch(`${baseUrl}/api/organizations/${orgId}/settings`);
       if (response.ok) {
         const data = await response.json();
         if (data.settings?.zendesk_subdomain) {
@@ -40,7 +40,7 @@ export default function SettingsPage() {
         }
       }
     } catch (err) {
-      console.error("Failed to load settings:", err);
+      // Silently fail during build
     }
   };
 
@@ -62,11 +62,10 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      const response = await fetch(`http://localhost:3001/api/organizations/${orgId}/settings`, {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const response = await fetch(`${baseUrl}/api/organizations/${orgId}/settings`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           zendesk_subdomain: zendeskSubdomain,
           zendesk_email: zendeskEmail,
@@ -75,13 +74,12 @@ export default function SettingsPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save settings");
+        throw new Error("Failed to save settings");
       }
 
       setMessage("Settings saved successfully!");
       setHasCredentials(true);
-      setZendeskApiToken(""); // Clear token after saving for security
+      setZendeskApiToken("");
     } catch (err: any) {
       setError(err.message || "Failed to save settings");
     } finally {
@@ -100,34 +98,15 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      const response = await fetch(`http://localhost:3001/api/organizations/${orgId}/sync-zendesk`, {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const response = await fetch(`${baseUrl}/api/organizations/${orgId}/sync-zendesk`, {
         method: "POST",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Sync failed");
-      }
+      if (!response.ok) throw new Error("Sync failed");
 
       const result = await response.json();
       setMessage(`Successfully synced ${result.ticketsSynced} tickets!`);
-
-      // Auto-trigger analysis
-      setTimeout(async () => {
-        try {
-          const analyzeResponse = await fetch(`http://localhost:3001/api/organizations/${orgId}/analyze`, {
-            method: "POST",
-          });
-
-          if (analyzeResponse.ok) {
-            const analyzeResult = await analyzeResponse.json();
-            setMessage(`Synced ${result.ticketsSynced} tickets and started analysis!`);
-          }
-        } catch (err) {
-          console.error("Auto-analysis failed:", err);
-        }
-      }, 1000);
-
     } catch (err: any) {
       setError(err.message || "Sync failed");
     } finally {
@@ -135,67 +114,8 @@ export default function SettingsPage() {
     }
   };
 
-  const loadSubscription = async () => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/organizations/${orgId}/subscription`);
-      if (response.ok) {
-        const data = await response.json();
-        setSubscription(data);
-      }
-    } catch (err) {
-      console.error("Failed to load subscription:", err);
-    } finally {
-      setLoadingSubscription(false);
-    }
-  };
-
-  const handleSubscribe = async () => {
-    if (!orgId) return;
-
-    try {
-      const response = await fetch(`http://localhost:3001/api/organizations/${orgId}/create-checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create checkout session");
-      }
-
-      const data = await response.json();
-      window.location.href = data.checkoutUrl;
-    } catch (err: any) {
-      setError(err.message || "Failed to start subscription");
-    }
-  };
-
-  const handleManageBilling = async () => {
-    if (!orgId) return;
-
-    try {
-      const response = await fetch(`http://localhost:3001/api/organizations/${orgId}/create-portal`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create billing portal session");
-      }
-
-      const data = await response.json();
-      window.location.href = data.portalUrl;
-    } catch (err: any) {
-      setError(err.message || "Failed to open billing portal");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
       <nav className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -211,7 +131,6 @@ export default function SettingsPage() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-6">
-          {/* Zendesk Integration */}
           <Card>
             <CardHeader>
               <CardTitle>Zendesk Integration</CardTitle>
@@ -222,18 +141,17 @@ export default function SettingsPage() {
             <CardContent>
               <form onSubmit={handleSaveSettings} className="space-y-4">
                 <div>
-                  <label htmlFor="subdomain" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Zendesk Subdomain
                   </label>
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-500">https://</span>
                     <input
-                      id="subdomain"
                       type="text"
                       value={zendeskSubdomain}
                       onChange={(e) => setZendeskSubdomain(e.target.value)}
                       placeholder="yourcompany"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
                       required
                     />
                     <span className="text-gray-500">.zendesk.com</span>
@@ -241,38 +159,31 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Zendesk Email
                   </label>
                   <input
-                    id="email"
                     type="email"
                     value={zendeskEmail}
                     onChange={(e) => setZendeskEmail(e.target.value)}
                     placeholder="admin@yourcompany.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="apiToken" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     API Token
                   </label>
                   <input
-                    id="apiToken"
                     type="password"
                     value={zendeskApiToken}
                     onChange={(e) => setZendeskApiToken(e.target.value)}
                     placeholder="Enter your Zendesk API token"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     required={!hasCredentials}
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    {hasCredentials
-                      ? "Leave blank to keep existing token"
-                      : "Generate in Zendesk Admin → API → Token Access"}
-                  </p>
                 </div>
 
                 {message && (
@@ -298,12 +209,7 @@ export default function SettingsPage() {
                   <p className="text-sm text-gray-600 mb-4">
                     Manually sync tickets from Zendesk. Automatic syncing happens daily at 2am.
                   </p>
-                  <Button
-                    onClick={handleSyncNow}
-                    disabled={syncing}
-                    variant="outline"
-                    className="w-full"
-                  >
+                  <Button onClick={handleSyncNow} disabled={syncing} variant="outline" className="w-full">
                     {syncing ? "Syncing..." : "Sync Tickets Now"}
                   </Button>
                 </div>
@@ -311,79 +217,6 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Subscription & Billing */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription & Billing</CardTitle>
-              <CardDescription>
-                Manage your subscription and payment information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingSubscription ? (
-                <div className="text-center py-4 text-gray-500">Loading subscription...</div>
-              ) : subscription?.isActive ? (
-                <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-green-900">
-                          ✓ Active Subscription
-                        </p>
-                        <p className="text-xs text-green-700 mt-1">
-                          {subscription.status === "trialing"
-                            ? `Trial ends ${new Date(subscription.trialEndsAt).toLocaleDateString()}`
-                            : `Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-green-900">$249/mo</p>
-                        <p className="text-xs text-green-700">Pro Plan</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handleManageBilling}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Manage Billing
-                  </Button>
-
-                  <p className="text-xs text-gray-500 text-center">
-                    Update payment method, view invoices, or cancel subscription
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">Pro Plan - $249/month</h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>✓ Unlimited ticket analysis</li>
-                      <li>✓ Automatic Zendesk sync (daily)</li>
-                      <li>✓ AI-powered churn detection</li>
-                      <li>✓ Email alerts for high-risk customers</li>
-                      <li>✓ Weekly summary reports</li>
-                    </ul>
-                  </div>
-
-                  <Button
-                    onClick={handleSubscribe}
-                    className="w-full"
-                  >
-                    Start 7-Day Free Trial
-                  </Button>
-
-                  <p className="text-xs text-gray-500 text-center">
-                    No credit card required for trial. Cancel anytime.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* How to get API Token */}
           <Card>
             <CardHeader>
               <CardTitle>How to get your Zendesk API Token</CardTitle>
@@ -393,17 +226,10 @@ export default function SettingsPage() {
                 <li>Log in to your Zendesk account</li>
                 <li>Go to Admin Center (gear icon)</li>
                 <li>Navigate to Apps and integrations → APIs → Zendesk API</li>
-                <li>Click on "Settings" tab</li>
                 <li>Enable "Token Access"</li>
                 <li>Click "Add API Token"</li>
-                <li>Give it a description (e.g., "Support Intelligence")</li>
                 <li>Copy the token and paste it above</li>
               </ol>
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
-                <p className="text-sm text-blue-800">
-                  <strong>Security:</strong> Your API token is encrypted and stored securely. We only use it to fetch your tickets.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>

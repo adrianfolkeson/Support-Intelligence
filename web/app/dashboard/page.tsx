@@ -7,6 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+// Force dynamic to avoid SSR issues with useSearchParams
+export const dynamic = 'force-dynamic';
+
 interface TicketAnalysis {
   id: string;
   ticket_id: string;

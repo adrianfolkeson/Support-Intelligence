@@ -6,6 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+// Force dynamic to avoid SSR issues with useSearchParams
+export const dynamic = 'force-dynamic';
+
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const orgId = searchParams.get("org");

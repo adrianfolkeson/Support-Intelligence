@@ -2,13 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-// Force dynamic to avoid SSR issues with useSearchParams
-export const dynamic = 'force-dynamic';
 
 interface TicketAnalysis {
   id: string;
@@ -23,20 +19,18 @@ interface TicketAnalysis {
 }
 
 export default function DashboardPage() {
-  const searchParams = useSearchParams();
-  const selectedOrg = searchParams.get("org") || "";
   const [tickets, setTickets] = useState<TicketAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "high-risk" | "frustrated">("all");
-  const [isClient, setIsClient] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<string>("");
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
+    // Get org from URL or localStorage
+    const params = new URLSearchParams(window.location.search);
+    const org = params.get("org") || localStorage.getItem("org_id") || "";
+    setSelectedOrg(org);
     
+    // Mock data for demo
     const mockTickets: TicketAnalysis[] = [
       {
         id: "c817f4ef-cfb3-4806-bdaa-cc07f797853b",
@@ -75,7 +69,7 @@ export default function DashboardPage() {
 
     setTickets(mockTickets);
     setLoading(false);
-  }, [isClient]);
+  }, []);
 
   const filteredTickets = tickets.filter((ticket) => {
     if (filter === "high-risk") return ticket.churn_risk >= 7;
@@ -119,7 +113,7 @@ export default function DashboardPage() {
               <Link href="/upload">
                 <Button variant="outline">Upload CSV</Button>
               </Link>
-              <Link href={`/settings?org=${selectedOrg}`}>
+              <Link href="/settings">
                 <Button variant="outline">Settings</Button>
               </Link>
             </div>

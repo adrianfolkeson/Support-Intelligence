@@ -2,17 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// Force dynamic to avoid SSR issues with useSearchParams
-export const dynamic = 'force-dynamic';
-
 export default function SettingsPage() {
-  const searchParams = useSearchParams();
-  const orgId = searchParams.get("org");
-
   const [zendeskSubdomain, setZendeskSubdomain] = useState("");
   const [zendeskEmail, setZendeskEmail] = useState("");
   const [zendeskApiToken, setZendeskApiToken] = useState("");
@@ -21,31 +14,14 @@ export default function SettingsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [hasCredentials, setHasCredentials] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [orgId, setOrgId] = useState("");
 
-  // Prevent SSR issues
   useEffect(() => {
-    setIsClient(true);
+    // Get org from URL or localStorage
+    const params = new URLSearchParams(window.location.search);
+    const org = params.get("org") || localStorage.getItem("org_id") || "";
+    setOrgId(org);
   }, []);
-
-  const loadSettings = async () => {
-    if (!orgId || !isClient) return;
-    
-    try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const response = await fetch(`${baseUrl}/api/organizations/${orgId}/settings`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.settings?.zendesk_subdomain) {
-          setZendeskSubdomain(data.settings.zendesk_subdomain);
-          setZendeskEmail(data.settings.zendesk_email || "");
-          setHasCredentials(true);
-        }
-      }
-    } catch (err) {
-      // Silently fail during build
-    }
-  };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +101,7 @@ export default function SettingsPage() {
             <Link href="/" className="text-xl font-bold text-gray-900">
               Support Intelligence
             </Link>
-            <Link href={`/dashboard?org=${orgId}`}>
+            <Link href="/dashboard">
               <Button variant="outline">Back to Dashboard</Button>
             </Link>
           </div>

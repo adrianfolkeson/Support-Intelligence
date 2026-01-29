@@ -55,17 +55,11 @@ export default function Home() {
                 href="/signup"
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Start 14-Day Free Trial
+                Start 30-Day Free Trial
                 <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
-              <a
-                href="#demo"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Watch Demo
-              </a>
             </div>
             <p className="mt-4 text-sm text-gray-500">
               No credit card required • Setup in 5 minutes • Cancel anytime
@@ -181,7 +175,7 @@ export default function Home() {
                     'Weekly insight reports',
                     'Email alerts for high-risk tickets',
                     'Priority support',
-                    '14-day free trial',
+                    '30-day free trial',
                   ].map((feature) => (
                     <li key={feature} className="flex items-center">
                       <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

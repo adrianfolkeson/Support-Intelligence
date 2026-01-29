@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+// Force dynamic rendering - prevent prerendering at build time
+export const dynamic = 'force-dynamic';
+
 interface TicketAnalysis {
   id: string;
   ticket_id: string;

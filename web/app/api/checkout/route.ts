@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.Stripe_Secret_Key!);
+const stripePublicKey = process.env.NextPublic_Stripe_key!;
 
-const PRICE_ID = process.env.STRIPE_PRICE_ID!; // $249/mån price ID
+const PRICE_ID = process.env.Stripe_Price_ID!;
 
 export async function POST() {
   try {
+    const baseUrl = process.env.NextPublic_URL || 'https://support-intelligence.vercel.app';
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -16,8 +19,8 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_URL || 'https://support-intelligence.vercel.app'}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL || 'https://support-intelligence.vercel.app'}/pricing?canceled=true`,
+      success_url: `${baseUrl}/dashboard?success=true`,
+      cancel_url: `${baseUrl}/pricing?canceled=true`,
     });
 
     return NextResponse.json({ url: session.url });

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
+// Pricing page with Stripe checkout
 export const dynamic = 'force-dynamic';
 
 export default function PricingPage() {

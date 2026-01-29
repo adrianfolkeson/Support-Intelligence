@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface TicketAnalysis {
   id: string;
@@ -22,53 +19,56 @@ export default function DashboardPage() {
   const [tickets, setTickets] = useState<TicketAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "high-risk" | "frustrated">("all");
-  const [selectedOrg, setSelectedOrg] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get org from URL or localStorage
-    const params = new URLSearchParams(window.location.search);
-    const org = params.get("org") || localStorage.getItem("org_id") || "";
-    setSelectedOrg(org);
-    
-    // Mock data for demo
-    const mockTickets: TicketAnalysis[] = [
-      {
-        id: "c817f4ef-cfb3-4806-bdaa-cc07f797853b",
-        ticket_id: "ticket-3",
-        sentiment: "frustrated",
-        frustration_level: 9,
-        churn_risk: 8,
-        confidence: 0.90,
-        categories: ["technical_issue", "complaint"],
-        key_issues: ["Login failure with 500 errors", "Inability to access the app"],
-        analyzed_at: new Date().toISOString(),
-      },
-      {
-        id: "a174e99a-ae2d-48f2-9360-0d40c05d83f9",
-        ticket_id: "ticket-2",
-        sentiment: "positive",
-        frustration_level: 3,
-        churn_risk: 2,
-        confidence: 0.80,
-        categories: ["feature_request"],
-        key_issues: ["Bright UI causing eye strain"],
-        analyzed_at: new Date().toISOString(),
-      },
-      {
-        id: "a3e718c3-5a0e-48ff-9b08-d0c475533d78",
-        ticket_id: "ticket-1",
-        sentiment: "negative",
-        frustration_level: 8,
-        churn_risk: 6,
-        confidence: 0.90,
-        categories: ["billing", "complaint"],
-        key_issues: ["Double charge on credit card"],
-        analyzed_at: new Date().toISOString(),
-      },
-    ];
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const org = params.get("org") || "";
+      
+      // Mock data for demo
+      const mockTickets: TicketAnalysis[] = [
+        {
+          id: "1",
+          ticket_id: "ticket-3",
+          sentiment: "frustrated",
+          frustration_level: 9,
+          churn_risk: 8,
+          confidence: 0.90,
+          categories: ["technical_issue"],
+          key_issues: ["Login failure"],
+          analyzed_at: new Date().toISOString(),
+        },
+        {
+          id: "2",
+          ticket_id: "ticket-2",
+          sentiment: "positive",
+          frustration_level: 3,
+          churn_risk: 2,
+          confidence: 0.80,
+          categories: ["feature_request"],
+          key_issues: ["Bright UI"],
+          analyzed_at: new Date().toISOString(),
+        },
+        {
+          id: "3",
+          ticket_id: "ticket-1",
+          sentiment: "negative",
+          frustration_level: 8,
+          churn_risk: 6,
+          confidence: 0.90,
+          categories: ["billing"],
+          key_issues: ["Double charge"],
+          analyzed_at: new Date().toISOString(),
+        },
+      ];
 
-    setTickets(mockTickets);
-    setLoading(false);
+      setTickets(mockTickets);
+    } catch (err) {
+      setError("Failed to load data");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const filteredTickets = tickets.filter((ticket) => {
@@ -79,18 +79,18 @@ export default function DashboardPage() {
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
-      case "positive": return "bg-green-100 text-green-800";
-      case "neutral": return "bg-gray-100 text-gray-800";
-      case "negative": return "bg-orange-100 text-orange-800";
-      case "frustrated": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "positive": return "#dcfce7";
+      case "neutral": return "#f3f4f6";
+      case "negative": return "#ffedd5";
+      case "frustrated": return "#fee2e2";
+      default: return "#f3f4f6";
     }
   };
 
   const getChurnRiskColor = (risk: number) => {
-    if (risk >= 8) return "bg-red-500 text-white";
-    if (risk >= 5) return "bg-orange-500 text-white";
-    return "bg-green-500 text-white";
+    if (risk >= 8) return "#ef4444";
+    if (risk >= 5) return "#f97316";
+    return "#22c55e";
   };
 
   const stats = {
@@ -101,110 +101,112 @@ export default function DashboardPage() {
       : 0,
   };
 
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: "2rem" }}>
+        <div style={{ maxWidth: "56rem", margin: "0 auto", textAlign: "center" }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <Link href="/" className="text-xl font-bold text-gray-900">
+    <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+      {/* Navigation */}
+      <nav style={{ backgroundColor: "white", borderBottom: "1px solid #e5e7eb" }}>
+        <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Link href="/" style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#111827" }}>
               Support Intelligence
             </Link>
-            <div className="flex gap-4">
-              <Link href="/upload">
-                <Button variant="outline">Upload CSV</Button>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <Link href="/upload" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+                Upload CSV
               </Link>
-              <Link href="/settings">
-                <Button variant="outline">Settings</Button>
+              <Link href="/settings" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+                Settings
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Total Tickets</CardDescription>
-              <CardTitle className="text-4xl">{stats.total}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>High Churn Risk</CardDescription>
-              <CardTitle className="text-4xl text-red-600">{stats.highRisk}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Avg AI Confidence</CardDescription>
-              <CardTitle className="text-4xl">{stats.avgConfidence}%</CardTitle>
-            </CardHeader>
-          </Card>
+      <main style={{ maxWidth: "56rem", margin: "0 auto", padding: "2rem 1rem" }}>
+        {/* Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
+          <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+            <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>Total Tickets</p>
+            <p style={{ fontSize: "2.25rem", fontWeight: "bold" }}>{stats.total}</p>
+          </div>
+          <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+            <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>High Churn Risk</p>
+            <p style={{ fontSize: "2.25rem", fontWeight: "bold", color: "#dc2626" }}>{stats.highRisk}</p>
+          </div>
+          <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+            <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>Avg Confidence</p>
+            <p style={{ fontSize: "2.25rem", fontWeight: "bold" }}>{stats.avgConfidence}%</p>
+          </div>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Analyzed Tickets</CardTitle>
-            <CardDescription>AI-powered analysis of your support tickets</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2 mb-4">
-              <Button variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")}>
-                All ({tickets.length})
-              </Button>
-              <Button variant={filter === "high-risk" ? "default" : "outline"} onClick={() => setFilter("high-risk")}>
-                High Risk ({tickets.filter((t) => t.churn_risk >= 7).length})
-              </Button>
-              <Button variant={filter === "frustrated" ? "default" : "outline"} onClick={() => setFilter("frustrated")}>
-                Frustrated ({tickets.filter((t) => t.frustration_level >= 7).length})
-              </Button>
-            </div>
+        {/* Tickets */}
+        <div style={{ backgroundColor: "white", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", padding: "1.5rem" }}>
+          <div style={{ marginBottom: "1rem" }}>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Analyzed Tickets</h2>
+            <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>AI-powered analysis of your support tickets</p>
+          </div>
 
-            {loading ? (
-              <div className="text-center py-12 text-gray-500">Loading...</div>
-            ) : filteredTickets.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 mb-4">No tickets found.</p>
-                <Link href="/upload">
-                  <Button>Upload CSV to Get Started</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredTickets.map((ticket) => (
-                  <Link
-                    key={ticket.id}
-                    href={`/ticket/${ticket.id}`}
-                    className="block border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-mono text-sm text-gray-600">{ticket.ticket_id}</span>
-                          <Badge className={getSentimentColor(ticket.sentiment)}>{ticket.sentiment}</Badge>
-                          <Badge className={getChurnRiskColor(ticket.churn_risk)}>Churn Risk: {ticket.churn_risk}/10</Badge>
-                          <Badge variant="outline">Frustration: {ticket.frustration_level}/10</Badge>
-                        </div>
-                        <div className="text-sm text-gray-700 mb-2">
-                          <strong>Key Issues:</strong> {ticket.key_issues.join(", ")}
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span>Categories: {ticket.categories.join(", ")}</span>
-                          <span>•</span>
-                          <span>Confidence: {(ticket.confidence * 100).toFixed(0)}%</span>
-                        </div>
-                      </div>
-                      <svg className="w-5 h-5 text-gray-400 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+          {/* Filters */}
+          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+            {["all", "high-risk", "frustrated"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f as any)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.375rem",
+                  border: "1px solid #d1d5db",
+                  backgroundColor: filter === f ? "#2563eb" : "white",
+                  color: filter === f ? "white" : "#374151",
+                  fontSize: "0.875rem",
+                }}
+              >
+                {f === "all" ? `All (${tickets.length})` : f === "high-risk" ? `High Risk (${tickets.filter((t) => t.churn_risk >= 7).length})` : `Frustrated (${tickets.filter((t) => t.frustration_level >= 7).length})`}
+              </button>
+            ))}
+          </div>
+
+          {/* Ticket List */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {filteredTickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.5rem",
+                  padding: "1rem",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div>
+                    <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: "monospace", fontSize: "0.875rem", color: "#6b7280" }}>{ticket.ticket_id}</span>
+                      <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", fontSize: "0.75rem", backgroundColor: getSentimentColor(ticket.sentiment) }}>{ticket.sentiment}</span>
+                      <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", fontSize: "0.75rem", color: "white", backgroundColor: getChurnRiskColor(ticket.churn_risk) }}>Churn Risk: {ticket.churn_risk}/10</span>
+                      <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", fontSize: "0.75rem", border: "1px solid #d1d5db" }}>Frustration: {ticket.frustration_level}/10</span>
                     </div>
-                  </Link>
-                ))}
+                    <p style={{ fontSize: "0.875rem", color: "#374151", marginBottom: "0.5rem" }}>
+                      <strong>Key Issues:</strong> {ticket.key_issues.join(", ")}
+                    </p>
+                    <p style={{ fontSize: "0.75rem", color: "#9ca3af" }}>
+                      Categories: {ticket.categories.join(", ")} • Confidence: {(ticket.confidence * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );

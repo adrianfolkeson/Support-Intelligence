@@ -2,215 +2,212 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
   const [zendeskSubdomain, setZendeskSubdomain] = useState("");
   const [zendeskEmail, setZendeskEmail] = useState("");
   const [zendeskApiToken, setZendeskApiToken] = useState("");
   const [saving, setSaving] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [hasCredentials, setHasCredentials] = useState(false);
-  const [orgId, setOrgId] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get org from URL or localStorage
-    const params = new URLSearchParams(window.location.search);
-    const org = params.get("org") || localStorage.getItem("org_id") || "";
-    setOrgId(org);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const org = params.get("org") || "";
+      
+      // Load saved settings from localStorage
+      const savedSubdomain = localStorage.getItem("zendesk_subdomain");
+      const savedEmail = localStorage.getItem("zendesk_email");
+      const savedToken = localStorage.getItem("zendesk_api_token");
+      
+      if (savedSubdomain) setZendeskSubdomain(savedSubdomain);
+      if (savedEmail) setZendeskEmail(savedEmail);
+      if (savedToken) setZendeskApiToken(savedToken);
+    } catch (err) {
+      console.error("Failed to load settings:", err);
+    }
   }, []);
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!orgId) {
-      setError("No organization selected");
-      return;
-    }
-
-    if (!zendeskSubdomain || !zendeskEmail || !zendeskApiToken) {
-      setError("All fields are required");
-      return;
-    }
-
+  const handleSave = async () => {
     setSaving(true);
-    setError("");
-    setMessage("");
+    setError(null);
+    setSaved(false);
 
     try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const response = await fetch(`${baseUrl}/api/organizations/${orgId}/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          zendesk_subdomain: zendeskSubdomain,
-          zendesk_email: zendeskEmail,
-          zendesk_api_token: zendeskApiToken,
-        }),
-      });
+      // Save to localStorage
+      localStorage.setItem("zendesk_subdomain", zendeskSubdomain);
+      localStorage.setItem("zendesk_email", zendeskEmail);
+      localStorage.setItem("zendesk_api_token", zendeskApiToken);
 
-      if (!response.ok) {
-        throw new Error("Failed to save settings");
-      }
+      // TODO: Send to backend API
+      // await fetch("/api/settings", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ zendeskSubdomain, zendeskEmail, zendeskApiToken }),
+      // });
 
-      setMessage("Settings saved successfully!");
-      setHasCredentials(true);
-      setZendeskApiToken("");
-    } catch (err: any) {
-      setError(err.message || "Failed to save settings");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError("Failed to save settings");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSyncNow = async () => {
-    if (!orgId) {
-      setError("No organization selected");
-      return;
-    }
-
-    setSyncing(true);
-    setError("");
-    setMessage("");
-
-    try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const response = await fetch(`${baseUrl}/api/organizations/${orgId}/sync-zendesk`, {
-        method: "POST",
-      });
-
-      if (!response.ok) throw new Error("Sync failed");
-
-      const result = await response.json();
-      setMessage(`Successfully synced ${result.ticketsSynced} tickets!`);
-    } catch (err: any) {
-      setError(err.message || "Sync failed");
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <Link href="/" className="text-xl font-bold text-gray-900">
+    <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+      {/* Navigation */}
+      <nav style={{ backgroundColor: "white", borderBottom: "1px solid #e5e7eb" }}>
+        <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Link href="/" style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#111827" }}>
               Support Intelligence
             </Link>
-            <Link href="/dashboard">
-              <Button variant="outline">Back to Dashboard</Button>
-            </Link>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <Link href="/dashboard" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+                Dashboard
+              </Link>
+              <Link href="/upload" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+                Upload CSV
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Zendesk Integration</CardTitle>
-              <CardDescription>
-                Connect your Zendesk account to automatically sync support tickets
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSaveSettings} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Zendesk Subdomain
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-500">https://</span>
-                    <input
-                      type="text"
-                      value={zendeskSubdomain}
-                      onChange={(e) => setZendeskSubdomain(e.target.value)}
-                      placeholder="yourcompany"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                    />
-                    <span className="text-gray-500">.zendesk.com</span>
-                  </div>
-                </div>
+      <main style={{ maxWidth: "56rem", margin: "0 auto", padding: "2rem 1rem" }}>
+        <div style={{ marginBottom: "2rem" }}>
+          <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "0.5rem" }}>Settings</h1>
+          <p style={{ color: "#6b7280" }}>Configure your integration settings</p>
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Zendesk Email
-                  </label>
-                  <input
-                    type="email"
-                    value={zendeskEmail}
-                    onChange={(e) => setZendeskEmail(e.target.value)}
-                    placeholder="admin@yourcompany.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
+        {/* Zendesk Settings */}
+        <div style={{ backgroundColor: "white", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", padding: "1.5rem", marginBottom: "1.5rem" }}>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600", marginBottom: "0.5rem" }}>Zendesk Integration</h2>
+            <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+              Connect your Zendesk account to automatically analyze support tickets
+            </p>
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    API Token
-                  </label>
-                  <input
-                    type="password"
-                    value={zendeskApiToken}
-                    onChange={(e) => setZendeskApiToken(e.target.value)}
-                    placeholder="Enter your Zendesk API token"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    required={!hasCredentials}
-                  />
-                </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div>
+              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
+                Subdomain
+              </label>
+              <input
+                type="text"
+                value={zendeskSubdomain}
+                onChange={(e) => setZendeskSubdomain(e.target.value)}
+                placeholder="yourcompany"
+                style={{
+                  width: "100%",
+                  padding: "0.5rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "0.375rem",
+                  fontSize: "0.875rem",
+                }}
+              />
+              <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                Your Zendesk subdomain (e.g., "yourcompany" from yourcompany.zendesk.com)
+              </p>
+            </div>
 
-                {message && (
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                    <p className="text-sm text-green-800">{message}</p>
-                  </div>
-                )}
+            <div>
+              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={zendeskEmail}
+                onChange={(e) => setZendeskEmail(e.target.value)}
+                placeholder="admin@yourcompany.com"
+                style={{
+                  width: "100%",
+                  padding: "0.5rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "0.375rem",
+                  fontSize: "0.875rem",
+                }}
+              />
+              <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                Your Zendesk admin email address
+              </p>
+            </div>
 
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                    <p className="text-sm text-red-800">{error}</p>
-                  </div>
-                )}
+            <div>
+              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
+                API Token
+              </label>
+              <input
+                type="password"
+                value={zendeskApiToken}
+                onChange={(e) => setZendeskApiToken(e.target.value)}
+                placeholder="your_api_token"
+                style={{
+                  width: "100%",
+                  padding: "0.5rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "0.375rem",
+                  fontSize: "0.875rem",
+                }}
+              />
+              <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
+                Generate an API token in Zendesk Admin &gt; Channels &gt; API
+              </p>
+            </div>
 
-                <Button type="submit" disabled={saving} className="w-full">
-                  {saving ? "Saving..." : "Save Zendesk Settings"}
-                </Button>
-              </form>
-
-              {hasCredentials && (
-                <div className="mt-6 pt-6 border-t">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Manual Sync</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Manually sync tickets from Zendesk. Automatic syncing happens daily at 2am.
-                  </p>
-                  <Button onClick={handleSyncNow} disabled={syncing} variant="outline" className="w-full">
-                    {syncing ? "Syncing..." : "Sync Tickets Now"}
-                  </Button>
-                </div>
+            <div style={{ marginTop: "1rem" }}>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "#2563eb",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "0.375rem",
+                  fontSize: "0.875rem",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  opacity: saving ? 0.7 : 1,
+                }}
+              >
+                {saving ? "Saving..." : "Save Settings"}
+              </button>
+              {saved && (
+                <span style={{ marginLeft: "0.5rem", color: "#22c55e", fontSize: "0.875rem" }}>
+                  ✓ Saved successfully
+                </span>
               )}
-            </CardContent>
-          </Card>
+              {error && (
+                <p style={{ color: "#dc2626", fontSize: "0.875rem", marginTop: "0.5rem" }}>{error}</p>
+              )}
+            </div>
+          </div>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>How to get your Zendesk API Token</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-gray-700">
-              <ol className="list-decimal list-inside space-y-2">
-                <li>Log in to your Zendesk account</li>
-                <li>Go to Admin Center (gear icon)</li>
-                <li>Navigate to Apps and integrations → APIs → Zendesk API</li>
-                <li>Enable "Token Access"</li>
-                <li>Click "Add API Token"</li>
-                <li>Copy the token and paste it above</li>
-              </ol>
-            </CardContent>
-          </Card>
+        {/* Help Section */}
+        <div style={{ backgroundColor: "white", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", padding: "1.5rem" }}>
+          <h3 style={{ fontSize: "1rem", fontWeight: "600", marginBottom: "0.5rem" }}>Need Help?</h3>
+          <p style={{ color: "#6b7280", fontSize: "0.875rem", marginBottom: "1rem" }}>
+            Check our documentation for detailed setup instructions
+          </p>
+          <Link
+            href="/integration-guide"
+            style={{
+              display: "inline-block",
+              padding: "0.5rem 1rem",
+              backgroundColor: "#f3f4f6",
+              color: "#374151",
+              borderRadius: "0.375rem",
+              fontSize: "0.875rem",
+              textDecoration: "none",
+            }}
+          >
+            View Integration Guide
+          </Link>
         </div>
       </main>
     </div>

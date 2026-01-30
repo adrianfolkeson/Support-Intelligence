@@ -26,7 +26,7 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('Kunde inte starta betalningen. Försök igen eller kontakta support.');
+      alert('Could not start payment. Please try again or contact support.');
     } finally {
       setLoading(false);
     }

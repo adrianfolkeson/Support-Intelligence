@@ -74,7 +74,7 @@ export default function PricingPage() {
                   <p className="text-gray-600">Complete AI analysis for support teams</p>
 
                   <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
-                    <p className="text-sm text-gray-700 mb-2">Introductory price (not limited time)</p>
+                    <p className="text-sm font-semibold text-purple-700 mb-2">🎉 Limited time offer for first 10 customers</p>
                     <div className="flex items-center justify-center gap-3">
                       <span className="text-2xl font-bold text-gray-400 line-through">$249</span>
                       <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
@@ -83,7 +83,10 @@ export default function PricingPage() {
                       <span className="text-gray-600">/month</span>
                     </div>
                     <p className="text-sm text-green-600 font-semibold mt-2">
-                      You save $1,200/year with this offer!
+                      You save $1,200/year! Lock in this price forever as an early adopter.
+                    </p>
+                    <p className="text-xs text-gray-600 mt-2">
+                      After the first 10 customers, the price will be $249/month.
                     </p>
                   </div>
                 </div>

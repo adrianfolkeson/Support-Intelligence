@@ -51,24 +51,14 @@ export default function PricingPage() {
 
       <main className="pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          {/* Early Adopter Badge */}
-          <div className="text-center mb-8">
-            <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 rounded-full text-sm font-semibold">
-              🎉 Early Adopter Special
-            </span>
-            <p className="mt-4 text-sm text-purple-600 font-medium">
-              Specialpris för våra första 10 kunder
-            </p>
-          </div>
-
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">
               AI-powered churn prevention,
               <span className="text-blue-600"> simplified</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Förutsp kundbortfall innan det händer. Automatisk analys av supportärenden med AI.
-              30 dagar gratis provperiod.
+              Predict customer churn before it happens. Automatic AI analysis of support tickets.
+              30 day free trial.
             </p>
           </div>
 
@@ -90,26 +80,26 @@ export default function PricingPage() {
                       <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                         $149
                       </span>
-                      <span className="text-gray-600">/månad</span>
+                      <span className="text-gray-600">/month</span>
                     </div>
                     <p className="text-sm text-green-600 font-semibold mt-2">
-                      Du sparar $1 200/år med detta erbjudande!
+                      You save $1,200/year with this offer!
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-10">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6">Allt ingår:</h4>
+                  <h4 className="text-xl font-semibold text-gray-900 mb-6">Everything included:</h4>
                   <ul className="space-y-4">
                     {[
-                      { icon: '🤖', text: 'AI-analys av alla supportärenden', highlight: false },
-                      { icon: '📊', text: 'Churn risk scoring (0-10) för varje kund', highlight: false },
-                      { icon: '⚡', text: 'Mejlavisningar vid hög risk (≥8/10)', highlight: false },
-                      { icon: '📈', text: 'Veckovisa insiktsrapporter', highlight: true },
-                      { icon: '🔗', text: 'Zendesk integration (automatisk sync)', highlight: true },
-                      { icon: '📧', text: 'Exportera data till CSV', highlight: false },
-                      { icon: '💬', text: 'Priority support via e-post', highlight: true },
-                      { icon: '🎁', text: '30 dagar gratis provperiod - inget kreditkort krävs!', highlight: true },
+                      { icon: '', text: 'AI analysis of all support tickets', highlight: false },
+                      { icon: '', text: 'Churn risk scoring (0-10) for each customer', highlight: false },
+                      { icon: '', text: 'Email alerts for high risk (≥8/10)', highlight: false },
+                      { icon: '', text: 'Weekly insight reports', highlight: true },
+                      { icon: '', text: 'Zendesk integration (automatic sync)', highlight: true },
+                      { icon: '', text: 'Export data to CSV', highlight: false },
+                      { icon: '', text: 'Priority support via email', highlight: true },
+                      { icon: '', text: '30 day free trial - no credit card required!', highlight: true },
                     ].map((feature, index) => (
                       <li key={index} className={`flex items-start gap-3 ${feature.highlight ? 'bg-blue-50 p-3 -mx-3 rounded-lg' : ''}`}>
                         <span className="text-2xl">{feature.icon}</span>
@@ -119,7 +109,7 @@ export default function PricingPage() {
                           </span>
                           {feature.highlight && (
                             <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                              POPULÄR
+                              POPULAR
                             </span>
                           )}
                         </div>
@@ -133,7 +123,7 @@ export default function PricingPage() {
                   disabled={loading}
                   className="w-full py-5 text-center text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
-                  {loading ? 'Startar...' : 'Starta 30 dagar gratis provperiod'}
+                  {loading ? 'Starting...' : 'Start 30 day free trial'}
                 </button>
 
                 <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
@@ -141,18 +131,18 @@ export default function PricingPage() {
                     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Inget kreditkort krävs</span>
+                    <span>No credit card required</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0" />
                     </svg>
-                    <span>Avsluta när som helst</span>
+                    <span>Cancel anytime</span>
                   </div>
                 </div>
 
                 <p className="mt-6 text-center text-sm text-gray-500">
-                  Du behåller introduktionspriset så länge du är kund 🎉
+                  You keep the introductory price as long as you stay a customer
                 </p>
               </div>
             </div>
@@ -162,22 +152,22 @@ export default function PricingPage() {
           <div className="mt-20 max-w-4xl mx-auto">
             <div className="bg-white rounded-xl p-8 shadow-lg">
               <h4 className="text-xl font-semibold text-center text-gray-900 mb-6">
-                Vad våra tidiga användare säger
+                What our early users say
               </h4>
               <div className="grid md:grid-cols-3 gap-6">
                 {[
                   {
-                    quote: "Vi hittade en riskkund som vi annars hade missat. Prisvärt!",
+                    quote: "We found a risk customer we would have otherwise missed. Great value!",
                     author: "SaaS Founder",
                     company: "Early Adopter"
                   },
                   {
-                    quote: "Veckorapporterna sparar oss timmar varje vecka.",
+                    quote: "The weekly reports save us hours every week.",
                     author: "Support Lead",
                     company: "Beta Tester"
                   },
                   {
-                    quote: "Så enkelt att komma igång. Integrerat på 5 minuter.",
+                    quote: "So easy to get started. Integrated in 5 minutes.",
                     author: "CTO",
                     company: "Early Adopter"
                   }
@@ -190,7 +180,7 @@ export default function PricingPage() {
                 ))}
               </div>
               <p className="text-center text-sm text-gray-500 mt-6">
-                *Hypotetiska citat för illustrativt syfte
+                *Hypothetical quotes for illustrative purposes
               </p>
             </div>
           </div>
@@ -199,16 +189,16 @@ export default function PricingPage() {
         {/* CTA Section */}
         <div className="mt-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Bli en av de första 10 kunderna
+            Be one of the first 10 customers
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Sök vi drivs du med att forma framtidens supportanalys. Early adopter-priset gäller så länge du är kund.
+            Join us in shaping the future of support analytics. Early adopter pricing applies as long as you stay a customer.
           </p>
           <button
             onClick={() => window.location.href = '#pricing'}
             className="inline-flex items-center px-8 py-4 text-lg font-semibold text-blue-600 bg-white rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
           >
-            Kom igång nu
+            Get started now
             <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5-5m5 5H6" />
             </svg>

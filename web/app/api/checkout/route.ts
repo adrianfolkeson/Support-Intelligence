@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.Stripe_Secret_Key!);
-const stripePublicKey = process.env.NextPublic_Stripe_key!;
-
-const PRICE_ID = process.env.Stripe_Price_ID!;
+export const dynamic = 'force-dynamic';
 
 export async function POST() {
   try {
+    // Initialize Stripe inside the function to avoid build-time errors
+    const stripeSecretKey = process.env.Stripe_Secret_Key;
+    const priceId = process.env.Stripe_Price_ID;
+
+    if (!stripeSecretKey || !priceId) {
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    const stripe = new Stripe(stripeSecretKey);
     const baseUrl = process.env.NextPublic_URL || 'https://support-intelligence.vercel.app';
 
     const session = await stripe.checkout.sessions.create({
@@ -15,7 +24,7 @@ export async function POST() {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],

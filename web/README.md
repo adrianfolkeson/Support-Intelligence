@@ -136,3 +136,4 @@ vercel
 - Backend API runs on port 3000
 - Frontend dev server runs on port 3000 (uses proxy in next.config.js)
 - For production, deploy frontend separately (Vercel) and update API base URL
+# Deployment fre 30 jan. 2026 12:44:15 CET

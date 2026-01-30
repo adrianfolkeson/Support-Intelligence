@@ -114,11 +114,11 @@ export default function DocumentationPage() {
               </h2>
               <ul className="space-y-2 text-gray-600">
                 <li>🎯 AI-powered sentiment analysis</li>
-                <li>⚡ Real-time churn risk scoring (0-10)</li>
-                <li>📊 Frustration level detection</li>
-                <li>🏷️ Automatic ticket categorization</li>
-                <li>💡 Evidence-based insights</li>
-                <li>🔔 Email alerts for high-risk tickets</li>
+                <li> Real-time churn risk scoring (0-10)</li>
+                <li> Frustration level detection</li>
+                <li> Automatic ticket categorization</li>
+                <li> Evidence-based insights</li>
+                <li> Email alerts for high-risk tickets</li>
               </ul>
             </section>
 
@@ -143,9 +143,9 @@ export default function DocumentationPage() {
                 We currently support the following integrations:
               </p>
               <ul className="space-y-2 text-gray-600">
-                <li>🔗 Zendesk</li>
+                <li> Zendesk</li>
                 <li>📁 CSV File Upload</li>
-                <li>📧 Email Alerts (via Resend)</li>
+                <li> Email Alerts (via Resend)</li>
               </ul>
               <p className="text-gray-600 mt-4">
                 See our{" "}
@@ -166,7 +166,7 @@ export default function DocumentationPage() {
               <ul className="space-y-2 text-gray-600">
                 <li>🆓 7-day free trial</li>
                 <li>💰 $249/month for up to 2,000 tickets</li>
-                <li>📈 Volume discounts available for larger organizations</li>
+                <li> Volume discounts available for larger organizations</li>
               </ul>
             </section>
           </div>

@@ -211,7 +211,7 @@ export default function DashboardConnectedPage() {
         <div className="mt-8 grid md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="text-2xl">📧</div>
+              <div className="text-2xl"></div>
               <h3 className="font-semibold text-gray-900">Export Data</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">Download all customer data and risk scores as CSV</p>
@@ -222,7 +222,7 @@ export default function DashboardConnectedPage() {
 
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="text-2xl">📊</div>
+              <div className="text-2xl"></div>
               <h3 className="font-semibold text-gray-900">Weekly Report</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">View the latest weekly insights and trends</p>
@@ -233,7 +233,7 @@ export default function DashboardConnectedPage() {
 
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="text-2xl">⚙️</div>
+              <div className="text-2xl"></div>
               <h3 className="font-semibold text-gray-900">Settings</h3>
             </div>
             <p className="text-sm text-gray-600 mb-4">Manage Zendesk connection and alert preferences</p>

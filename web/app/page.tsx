@@ -92,7 +92,7 @@ export default function Home() {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">🤖</div>
+                <div className="text-4xl mb-4">AI</div>
                 <h3 className="text-xl font-semibold mb-2">AI-Powered Analysis</h3>
                 <p className="text-gray-600">
                   Automatically analyze sentiment, frustration level, and churn risk for every ticket using Claude AI.
@@ -100,7 +100,7 @@ export default function Home() {
               </div>
 
               <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">⚡</div>
+                <div className="text-4xl mb-4">🔔</div>
                 <h3 className="text-xl font-semibold mb-2">Instant Alerts</h3>
                 <p className="text-gray-600">
                   Get email notifications when customers show high churn risk (≥8/10) so you can act fast.

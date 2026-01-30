@@ -191,8 +191,8 @@ export default function SupportPage() {
                 Other Ways to Reach Us
               </h3>
               <ul className="space-y-2 text-blue-800">
-                <li>📧 Email: support@support-intelligence.ai</li>
-                <li>💬 Live Chat: Available 9AM-5PM EST</li>
+                <li> Email: support@support-intelligence.ai</li>
+                <li> Live Chat: Available 9AM-5PM EST</li>
                 <li>📞 Phone: 1-800-SUPPORT (Enterprise plans only)</li>
               </ul>
             </div>
@@ -236,7 +236,7 @@ export default function SupportPage() {
               href="/integration-guide"
               className="block p-6 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
             >
-              <div className="text-3xl mb-4">🔗</div>
+              <div className="text-3xl mb-4"></div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Integration Guide
               </h3>

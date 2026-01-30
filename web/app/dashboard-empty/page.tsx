@@ -47,7 +47,7 @@ export default function DashboardEmptyPage() {
             {/* Features */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="bg-gray-50 rounded-lg p-6">
-                <div className="text-3xl mb-3">🤖</div>
+                <div className="text-3xl mb-3">AI</div>
                 <h3 className="font-semibold text-gray-900 mb-2">AI Analysis</h3>
                 <p className="text-sm text-gray-600">
                   Automatic sentiment analysis and churn risk scoring

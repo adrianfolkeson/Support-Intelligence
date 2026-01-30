@@ -173,8 +173,8 @@ curl -X GET https://api.support-intelligence.ai/v1/organizations/:id/tickets \\
               </h3>
               <ul className="space-y-2 text-gray-600 mb-4">
                 <li>🚨 high_churn_risk - Churn risk ≥8 detected</li>
-                <li>📊 analysis_complete - Ticket analysis finished</li>
-                <li>📈 weekly_report_ready - New report generated</li>
+                <li> analysis_complete - Ticket analysis finished</li>
+                <li> weekly_report_ready - New report generated</li>
               </ul>
 
               <h3 className="text-lg font-semibold text-gray-900 mb-2">

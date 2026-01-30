@@ -55,7 +55,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/signup"
+                  href="/pricing"
                   className="hover:text-white transition-colors"
                 >
                   Pricing

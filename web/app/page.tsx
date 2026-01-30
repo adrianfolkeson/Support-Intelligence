@@ -187,7 +187,7 @@ export default function Home() {
                 </ul>
 
                 <Link
-                  href="/signup"
+                  href="/pricing"
                   className="block w-full py-4 text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-medium transition-colors"
                 >
                   Start Free Trial
@@ -210,7 +210,7 @@ export default function Home() {
               Join companies using Support Intelligence to deliver better customer experiences.
             </p>
             <Link
-              href="/signup"
+              href="/pricing"
               className="inline-flex items-center px-8 py-4 text-lg font-medium text-blue-600 bg-white rounded-lg hover:bg-gray-100 transition-colors"
             >
               Get Started Free

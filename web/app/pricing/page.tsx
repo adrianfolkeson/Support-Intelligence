@@ -71,10 +71,10 @@ export default function PricingPage() {
               <div className="relative z-10">
                 <div className="text-center mb-10">
                   <h3 className="text-3xl font-bold text-gray-900 mb-3">Professional</h3>
-                  <p className="text-gray-600">Komplett AI-analys för supportteam</p>
+                  <p className="text-gray-600">Complete AI analysis for support teams</p>
 
                   <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
-                    <p className="text-sm text-gray-700 mb-2">Introduktionspris (ej tidsbegränsat)</p>
+                    <p className="text-sm text-gray-700 mb-2">Introductory price (not limited time)</p>
                     <div className="flex items-center justify-center gap-3">
                       <span className="text-2xl font-bold text-gray-400 line-through">$249</span>
                       <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">

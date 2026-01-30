@@ -95,7 +95,7 @@ export default function SignupPage() {
       <main className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Card>
           <CardHeader>
-            <CardTitle>Start Your 7-Day Free Trial</CardTitle>
+            <CardTitle>Start Your 30-Day Free Trial</CardTitle>
             <CardDescription>
               No credit card required. Cancel anytime.
             </CardDescription>
@@ -128,7 +128,7 @@ export default function SignupPage() {
                 <h4 className="text-sm font-medium text-blue-900 mb-2">What happens next:</h4>
                 <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                   <li>Enter your payment details (Stripe)</li>
-                  <li>7-day free trial starts immediately</li>
+                  <li>30-day free trial starts immediately</li>
                   <li>Connect your Zendesk account</li>
                   <li>AI automatically analyzes your tickets</li>
                   <li>Get email alerts for at-risk customers</li>

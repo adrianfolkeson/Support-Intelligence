@@ -24,7 +24,7 @@ export default function Home() {
                 Sign In
               </Link>
               <Link
-                href="/signup"
+                href="/pricing"
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
               >
                 Get Started
@@ -52,7 +52,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/signup"
+                href="/pricing"
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Start 30-Day Free Trial

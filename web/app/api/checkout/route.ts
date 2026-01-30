@@ -36,7 +36,7 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/dashboard?success=true`,
+      success_url: `${baseUrl}/welcome?success=true`,
       cancel_url: `${baseUrl}/pricing?canceled=true`,
     });
 

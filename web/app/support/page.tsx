@@ -4,11 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 
-export const metadata = {
-  title: "Support - Support Intelligence",
-  description: "Get help with Support Intelligence",
-};
-
 export default function SupportPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);

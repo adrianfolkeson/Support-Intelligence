@@ -27,7 +27,7 @@ router.post('/organizations/:id/create-checkout', async (req: Request, res: Resp
     const orgName = orgResult.rows[0].name;
 
     // Create checkout session
-    const successUrl = `${req.headers.origin}/dashboard?org=${id}&checkout=success`;
+    const successUrl = `${req.headers.origin}/dashboard-connected?org=${id}&checkout=success`;
     const cancelUrl = `${req.headers.origin}/settings?org=${id}&checkout=canceled`;
 
     const result = await createCheckoutSession(id, orgName, successUrl, cancelUrl);

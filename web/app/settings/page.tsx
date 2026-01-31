@@ -13,17 +13,19 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState("71474f1d-e3c0-4b70-8874-d26cb5047cb7");
 
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const org = params.get("org") || "";
-      
-      // Load saved settings from localStorage
+      const org = params.get("org") || "71474f1d-e3c0-4b70-8874-d26cb5047cb7";
+      setOrgId(org);
+
+      // Load from localStorage for now
       const savedSubdomain = localStorage.getItem("zendesk_subdomain");
       const savedEmail = localStorage.getItem("zendesk_email");
       const savedToken = localStorage.getItem("zendesk_api_token");
-      
+
       if (savedSubdomain) setZendeskSubdomain(savedSubdomain);
       if (savedEmail) setZendeskEmail(savedEmail);
       if (savedToken) setZendeskApiToken(savedToken);
@@ -38,22 +40,35 @@ export default function SettingsPage() {
     setSaved(false);
 
     try {
-      // Save to localStorage
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+
+      // Save to backend
+      const response = await fetch(`${backendUrl}/api/organizations/${orgId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          zendesk_subdomain: zendeskSubdomain,
+          zendesk_email: zendeskEmail,
+          zendesk_api_token: zendeskApiToken,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save settings');
+      }
+
+      // Also save to localStorage as backup
       localStorage.setItem("zendesk_subdomain", zendeskSubdomain);
       localStorage.setItem("zendesk_email", zendeskEmail);
       localStorage.setItem("zendesk_api_token", zendeskApiToken);
 
-      // TODO: Send to backend API
-      // await fetch("/api/settings", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ zendeskSubdomain, zendeskEmail, zendeskApiToken }),
-      // });
-
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      setError("Failed to save settings");
+    } catch (err: any) {
+      setError(err.message || "Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -69,10 +84,16 @@ export default function SettingsPage() {
               Support Intelligence
             </Link>
             <div style={{ display: "flex", gap: "1rem" }}>
-              <Link href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+              <Link
+                href={`/dashboard-connected?org=${orgId}`}
+                style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem", textDecoration: "none", color: "#374151" }}
+              >
                 Dashboard
               </Link>
-              <Link href="/upload" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+              <Link
+                href={`/upload?org=${orgId}`}
+                style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem", textDecoration: "none", color: "#374151" }}
+              >
                 Upload CSV
               </Link>
             </div>
@@ -86,6 +107,20 @@ export default function SettingsPage() {
           <p style={{ color: "#6b7280" }}>Configure your integration settings</p>
         </div>
 
+        {/* Success Message */}
+        {saved && (
+          <div style={{ backgroundColor: "#d1fae5", border: "1px solid #34d399", borderRadius: "0.375rem", padding: "0.75rem", marginBottom: "1rem" }}>
+            <p style={{ color: "#065f46", fontSize: "0.875rem" }}>Settings saved successfully!</p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div style={{ backgroundColor: "#fee2e2", border: "1px solid #ef4444", borderRadius: "0.375rem", padding: "0.75rem", marginBottom: "1rem" }}>
+            <p style={{ color: "#991b1b", fontSize: "0.875rem" }}>{error}</p>
+          </div>
+        )}
+
         {/* Zendesk Settings */}
         <div style={{ backgroundColor: "white", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", padding: "1.5rem", marginBottom: "1.5rem" }}>
           <div style={{ marginBottom: "1.5rem" }}>
@@ -95,122 +130,118 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {/* Subdomain */}
             <div>
-              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
-                Subdomain
+              <label htmlFor="subdomain" style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+                Zendesk Subdomain
               </label>
               <input
+                id="subdomain"
                 type="text"
                 value={zendeskSubdomain}
                 onChange={(e) => setZendeskSubdomain(e.target.value)}
                 placeholder="yourcompany"
+                disabled={saving}
                 style={{
                   width: "100%",
-                  padding: "0.5rem",
+                  padding: "0.5rem 0.75rem",
                   border: "1px solid #d1d5db",
                   borderRadius: "0.375rem",
-                  fontSize: "0.875rem",
+                  fontSize: "0.875rem"
                 }}
               />
-              <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
-                Your Zendesk subdomain (e.g., "yourcompany" from yourcompany.zendesk.com)
+              <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.25rem" }}>
+                The part before .zendesk.com in your URL
               </p>
             </div>
 
+            {/* Email */}
             <div>
-              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
-                Email
+              <label htmlFor="email" style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
+                Zendesk Email
               </label>
               <input
+                id="email"
                 type="email"
                 value={zendeskEmail}
                 onChange={(e) => setZendeskEmail(e.target.value)}
-                placeholder="admin@yourcompany.com"
+                placeholder="you@yourcompany.com"
+                disabled={saving}
                 style={{
                   width: "100%",
-                  padding: "0.5rem",
+                  padding: "0.5rem 0.75rem",
                   border: "1px solid #d1d5db",
                   borderRadius: "0.375rem",
-                  fontSize: "0.875rem",
+                  fontSize: "0.875rem"
                 }}
               />
-              <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
-                Your Zendesk admin email address
+              <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.25rem" }}>
+                Your Zendesk account email
               </p>
             </div>
 
+            {/* API Token */}
             <div>
-              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.5rem" }}>
+              <label htmlFor="apiToken" style={{ display: "block", fontSize: "0.875rem", fontWeight: "500", color: "#374151", marginBottom: "0.25rem" }}>
                 API Token
               </label>
               <input
+                id="apiToken"
                 type="password"
                 value={zendeskApiToken}
                 onChange={(e) => setZendeskApiToken(e.target.value)}
-                placeholder="your_api_token"
+                placeholder="Your API token from Zendesk Admin"
+                disabled={saving}
                 style={{
                   width: "100%",
-                  padding: "0.5rem",
+                  padding: "0.5rem 0.75rem",
                   border: "1px solid #d1d5db",
                   borderRadius: "0.375rem",
-                  fontSize: "0.875rem",
+                  fontSize: "0.875rem"
                 }}
               />
-              <p style={{ fontSize: "0.75rem", color: "#9ca3af", marginTop: "0.25rem" }}>
-                Generate an API token in Zendesk Admin &gt; Channels &gt; API
+              <p style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "0.25rem" }}>
+                Generate in Zendesk Admin → Channels → API
               </p>
             </div>
 
+            {/* Save Button */}
             <div style={{ marginTop: "1rem" }}>
               <button
-                onClick={handleSave}
+                type="submit"
                 disabled={saving}
                 style={{
                   padding: "0.5rem 1rem",
-                  backgroundColor: "#2563eb",
+                  backgroundColor: saving ? "#9ca3af" : "#2563eb",
                   color: "white",
                   border: "none",
                   borderRadius: "0.375rem",
                   fontSize: "0.875rem",
+                  fontWeight: "500",
                   cursor: saving ? "not-allowed" : "pointer",
-                  opacity: saving ? 0.7 : 1,
+                  opacity: saving ? 0.7 : 1
                 }}
               >
                 {saving ? "Saving..." : "Save Settings"}
               </button>
-              {saved && (
-                <span style={{ marginLeft: "0.5rem", color: "#22c55e", fontSize: "0.875rem" }}>
-                  ✓ Saved successfully
-                </span>
-              )}
-              {error && (
-                <p style={{ color: "#dc2626", fontSize: "0.875rem", marginTop: "0.5rem" }}>{error}</p>
-              )}
             </div>
-          </div>
+          </form>
         </div>
 
-        {/* Help Section */}
-        <div style={{ backgroundColor: "white", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", padding: "1.5rem" }}>
-          <h3 style={{ fontSize: "1rem", fontWeight: "600", marginBottom: "0.5rem" }}>Need Help?</h3>
-          <p style={{ color: "#6b7280", fontSize: "0.875rem", marginBottom: "1rem" }}>
-            Check our documentation for detailed setup instructions
-          </p>
-          <Link
-            href="/integration-guide"
-            style={{
-              display: "inline-block",
-              padding: "0.5rem 1rem",
-              backgroundColor: "#f3f4f6",
-              color: "#374151",
-              borderRadius: "0.375rem",
-              fontSize: "0.875rem",
-              textDecoration: "none",
-            }}
-          >
-            View Integration Guide
-          </Link>
+        {/* Instructions */}
+        <div style={{ backgroundColor: "#eff6ff", border: "1px solid #3b82f6", borderRadius: "0.5rem", padding: "1rem" }}>
+          <h3 style={{ fontSize: "1rem", fontWeight: "600", color: "#1e40af", marginBottom: "0.5rem" }}>
+            How to generate your Zendesk API token:
+          </h3>
+          <ol style={{ paddingLeft: "1.5rem", color: "#1e3a8a", fontSize: "0.875rem" }}>
+            <li style={{ marginBottom: "0.25rem" }}>Log in to your Zendesk account as an admin</li>
+            <li style={{ marginBottom: "0.25rem" }}>Go to Admin Center → Channels → API</li>
+            <li style={{ marginBottom: "0.25rem" }}>Click "Add API token"</li>
+            <li style={{ marginBottom: "0.25rem" }}>Give it a description (e.g., "Support Intelligence")</li>
+            <li style={{ marginBottom: "0.25rem" }}>Set scope to "Tickets: Read" and "Users: Read"</li>
+            <li>Copy and paste the token above</li>
+          </ol>
         </div>
       </main>
     </div>

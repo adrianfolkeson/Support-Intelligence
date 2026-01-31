@@ -47,8 +47,11 @@ export default function UploadPage() {
 
       setProgress('Parsing tickets...');
 
+      // Get backend URL
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+
       // Send to backend
-      const response = await fetch('http://localhost:3001/api/upload', {
+      const response = await fetch(`${backendUrl}/api/upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +74,7 @@ export default function UploadPage() {
       setAnalyzing(true);
 
       // Start analysis
-      const analyzeResponse = await fetch('http://localhost:3001/api/analyze', {
+      const analyzeResponse = await fetch(`${backendUrl}/api/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +94,7 @@ export default function UploadPage() {
 
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
-        router.push(`/dashboard?org=${result.organizationId}`);
+        router.push(`/dashboard-connected?org=${result.organizationId}`);
       }, 2000);
 
     } catch (err: any) {
@@ -111,7 +114,7 @@ export default function UploadPage() {
             <Link href="/" className="text-xl font-bold text-gray-900">
               Support Intelligence
             </Link>
-            <Link href="/dashboard">
+            <Link href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7">
               <Button variant="outline">View Dashboard</Button>
             </Link>
           </div>

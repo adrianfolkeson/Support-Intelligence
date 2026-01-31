@@ -1,57 +1,161 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export const dynamic = 'force-dynamic';
 
-async function getDashboardData(orgId: string) {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
-
-  try {
-    const response = await fetch(`${backendUrl}/api/organizations/${orgId}/dashboard`, {
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch dashboard data');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    return null;
-  }
-}
-
-async function getTickets(orgId: string) {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
-
-  try {
-    const response = await fetch(`${backendUrl}/api/organizations/${orgId}/tickets?limit=20`, {
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch tickets');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching tickets:', error);
-    return null;
-  }
-}
-
-export default async function DashboardConnectedPage({
+export default function DashboardConnectedPage({
   searchParams,
 }: {
   searchParams: { org?: string };
 }) {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [tickets, setTickets] = useState<any[]>([]);
+
   // For demo: use orgId from URL or default to test org
   const orgId = searchParams.org || '71474f1d-e3c0-4b70-8874-d26cb5047cb7';
 
-  const [dashboardData, ticketsData] = await Promise.all([
-    getDashboardData(orgId),
-    getTickets(orgId)
-  ]);
+  useEffect(() => {
+    loadData();
+  }, [orgId]);
+
+  async function loadData() {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+
+    try {
+      const [dashboardRes, ticketsRes] = await Promise.all([
+        fetch(`${backendUrl}/api/organizations/${orgId}/dashboard`, { cache: 'no-store' }),
+        fetch(`${backendUrl}/api/organizations/${orgId}/tickets?limit=20`, { cache: 'no-store' })
+      ]);
+
+      if (dashboardRes.ok) {
+        const data = await dashboardRes.json();
+        setDashboardData(data);
+      }
+
+      if (ticketsRes.ok) {
+        const data = await ticketsRes.json();
+        setTickets(data.tickets || []);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  }
+
+  async function handleExportCSV() {
+    setLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+      const response = await fetch(`${backendUrl}/api/organizations/${orgId}/tickets?limit=1000`);
+
+      if (!response.ok) throw new Error('Failed to fetch tickets');
+
+      const data = await response.json();
+      const tickets = data.tickets || [];
+
+      if (tickets.length === 0) {
+        setMessage({ type: 'error', text: 'No tickets to export' });
+        return;
+      }
+
+      // Create CSV
+      const headers = ['Customer Email', 'Subject', 'Risk Score', 'Frustration', 'Issues', 'Date'];
+      const csvContent = [
+        headers.join(','),
+        ...tickets.map((t: any) => [
+          t.customer_email || '',
+          `"${(t.subject || '').replace(/"/g, '""')}"`,
+          t.churn_risk || 0,
+          t.frustration_level || 0,
+          `"${(t.key_issues || '').replace(/"/g, '""')}"`,
+          t.ticket_timestamp || ''
+        ].join(','))
+      ].join('\n');
+
+      // Download
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `support-intelligence-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setMessage({ type: 'success', text: 'CSV exported successfully!' });
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to export CSV' });
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  }
+
+  async function handleGenerateReport() {
+    setLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+      const response = await fetch(`${backendUrl}/api/organizations/${orgId}/generate-report`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) throw new Error('Failed to generate report');
+
+      const result = await response.json();
+      setMessage({ type: 'success', text: `Weekly report generated! Report ID: ${result.report_id}` });
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to generate report' });
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  }
+
+  async function handleSyncTickets() {
+    setLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+      const response = await fetch(`${backendUrl}/api/organizations/${orgId}/ingest`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) throw new Error('Failed to sync tickets');
+
+      setMessage({ type: 'success', text: 'Ticket sync started! Check back in a few minutes.' });
+
+      // Reload data after a delay
+      setTimeout(() => loadData(), 5000);
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to sync tickets' });
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  }
+
+  async function handleAnalyzeTickets() {
+    setLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+      const response = await fetch(`${backendUrl}/api/organizations/${orgId}/analyze`, {
+        method: 'POST'
+      });
+
+      if (!response.ok) throw new Error('Failed to analyze tickets');
+
+      setMessage({ type: 'success', text: 'Analysis started! Check back in a few minutes.' });
+
+      // Reload data after a delay
+      setTimeout(() => loadData(), 5000);
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to analyze tickets' });
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  }
 
   const stats = dashboardData || {
     total_tickets: 0,
@@ -61,8 +165,6 @@ export default async function DashboardConnectedPage({
     high_churn_risk_count: 0,
     recent_tickets: []
   };
-
-  const tickets = ticketsData?.tickets || [];
 
   const getRiskColor = (score: number) => {
     if (score >= 8) return "bg-red-500";
@@ -85,7 +187,7 @@ export default async function DashboardConnectedPage({
               Support Intelligence
             </Link>
             <div className="flex items-center gap-4">
-              <Link href="/settings" className="text-sm font-medium text-gray-700 hover:text-gray-900">
+              <Link href="/settings?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7" className="text-sm font-medium text-gray-700 hover:text-gray-900">
                 Settings
               </Link>
             </div>
@@ -94,6 +196,13 @@ export default async function DashboardConnectedPage({
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Message Toast */}
+        {message && (
+          <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+            {message.text}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -102,13 +211,21 @@ export default async function DashboardConnectedPage({
               <p className="text-gray-600 mt-1">Real-time customer intelligence</p>
             </div>
             <div className="flex gap-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+              <button
+                onClick={handleExportCSV}
+                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Export CSV
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+              <button
+                onClick={handleGenerateReport}
+                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -156,7 +273,7 @@ export default async function DashboardConnectedPage({
               </div>
               <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
             </div>
@@ -184,7 +301,7 @@ export default async function DashboardConnectedPage({
               <div className="flex-shrink-0">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0.538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 </div>
               </div>
@@ -216,7 +333,7 @@ export default async function DashboardConnectedPage({
                 Connect your Zendesk account to start analyzing support tickets.
               </p>
               <Link
-                href="/settings"
+                href="/settings?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
                 className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
               >
                 Connect Zendesk
@@ -264,7 +381,7 @@ export default async function DashboardConnectedPage({
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(ticket.ticket_timestamp).toLocaleDateString()}
+                        {ticket.ticket_timestamp ? new Date(ticket.ticket_timestamp).toLocaleDateString() : 'N/A'}
                       </td>
                     </tr>
                   ))}
@@ -276,7 +393,11 @@ export default async function DashboardConnectedPage({
 
         {/* Quick Actions */}
         <div className="mt-8 grid md:grid-cols-3 gap-6">
-          <button className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all text-left">
+          <button
+            onClick={handleSyncTickets}
+            disabled={loading}
+            className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all text-left disabled:opacity-50"
+          >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,7 +409,11 @@ export default async function DashboardConnectedPage({
             <p className="text-sm text-gray-600">Fetch latest tickets from Zendesk</p>
           </button>
 
-          <button className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all text-left">
+          <button
+            onClick={handleAnalyzeTickets}
+            disabled={loading}
+            className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all text-left disabled:opacity-50"
+          >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,7 +426,7 @@ export default async function DashboardConnectedPage({
           </button>
 
           <Link
-            href="/settings"
+            href="/settings?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
             className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all text-left"
           >
             <div className="flex items-center gap-3 mb-3">

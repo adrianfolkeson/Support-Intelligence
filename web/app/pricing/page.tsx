@@ -13,16 +13,21 @@ export default function PricingPage() {
     setLoading(true);
 
     try {
+      // Generate organization name from timestamp for uniqueness
+      const organizationName = `Customer-${Date.now()}`;
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizationName }),
       });
 
-      const { url } = await response.json();
+      const data = await response.json();
 
-      if (url) {
-        window.location.href = url;
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        throw new Error('Failed to create checkout session');
+        throw new Error(data.error || 'Failed to create checkout session');
       }
     } catch (error) {
       console.error('Checkout error:', error);

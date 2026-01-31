@@ -1,8 +1,89 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
 export default function WelcomePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const setupOrganization = async () => {
+      const sessionId = searchParams.get('session_id');
+
+      if (!sessionId) {
+        // No session ID - might be direct access, redirect to pricing
+        router.push('/pricing');
+        return;
+      }
+
+      try {
+        // Get organization from Stripe session
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+
+        const response = await fetch(`${backendUrl}/api/stripe/session/${sessionId}/organization`);
+        if (!response.ok) {
+          throw new Error('Failed to get organization');
+        }
+
+        const data = await response.json();
+        setOrganizationId(data.organization_id);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to get organization:', err);
+        setError('Could not load your account. Please contact support.');
+        setLoading(false);
+      }
+    };
+
+    setupOrganization();
+  }, [searchParams, router]);
+
+  const handleGetStarted = () => {
+    if (organizationId) {
+      router.push(`/dashboard-connected?org=${organizationId}`);
+    }
+  };
+
+  const handleConnectZendesk = () => {
+    if (organizationId) {
+      router.push(`/settings?org=${organizationId}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Setting up your account...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl p-8 shadow-lg max-w-md">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Link
+            href="/support"
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Contact Support →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <nav className="border-b bg-white/80 backdrop-blur-sm fixed w-full z-50">
@@ -67,12 +148,12 @@ export default function WelcomePage() {
                       Enter your subdomain and token below
                     </li>
                   </ul>
-                  <Link
-                    href="/settings"
+                  <button
+                    onClick={handleConnectZendesk}
                     className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                   >
                     Connect Zendesk Now
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -129,15 +210,15 @@ export default function WelcomePage() {
 
           {/* CTA */}
           <div className="mt-12 text-center">
-            <Link
-              href="/settings"
+            <button
+              onClick={handleGetStarted}
               className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
             >
-              Get Started Now
+              Go to Dashboard
               <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5-5m5-5H6" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
-            </Link>
+            </button>
             <p className="mt-4 text-sm text-gray-600">
               Takes less than 5 minutes to set up
             </p>

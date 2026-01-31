@@ -1,54 +1,61 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    // Debug: Log env vars (without exposing the key)
-    console.log('Stripe_Secret_Key exists:', !!process.env.Stripe_Secret_Key);
-    console.log('Stripe_Price_ID:', process.env.Stripe_Price_ID);
-    console.log('NextPublic_URL:', process.env.NextPublic_URL);
+    const body = await request.json();
+    const { organizationName } = body;
 
-    // Initialize Stripe inside the function to avoid build-time errors
-    const stripeSecretKey = process.env.Stripe_Secret_Key;
-    const priceId = process.env.Stripe_Price_ID;
-
-    if (!stripeSecretKey || !priceId) {
-      console.error('Missing configuration:', { stripeSecretKey: !!stripeSecretKey, priceId });
+    if (!organizationName) {
       return NextResponse.json(
-        { error: 'Server configuration error: Missing Stripe credentials' },
-        { status: 500 }
+        { error: 'Organization name is required' },
+        { status: 400 }
       );
     }
 
-    const stripe = new Stripe(stripeSecretKey);
-    const baseUrl = process.env.NextPublic_URL || 'https://supportintelligence.vercel.app';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
 
-    console.log('Creating Stripe checkout session with:', { priceId, baseUrl });
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${baseUrl}/welcome?success=true`,
-      cancel_url: `${baseUrl}/pricing?canceled=true`,
+    // Create organization first
+    const orgResponse = await fetch(`${backendUrl}/api/organizations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: organizationName }),
     });
 
-    console.log('Stripe session created:', session.id);
+    if (!orgResponse.ok) {
+      const error = await orgResponse.json();
+      throw new Error(error.error || 'Failed to create organization');
+    }
 
-    return NextResponse.json({ url: session.url });
+    const orgData = await orgResponse.json();
+    const organizationId = orgData.organization.id;
+
+    // Create checkout session via backend
+    const checkoutResponse = await fetch(`${backendUrl}/api/organizations/${organizationId}/create-checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Origin': process.env.NEXT_PUBLIC_URL || 'https://supportintelligence.vercel.app',
+      },
+    });
+
+    if (!checkoutResponse.ok) {
+      const error = await checkoutResponse.json();
+      throw new Error(error.error || 'Failed to create checkout session');
+    }
+
+    const checkoutData = await checkoutResponse.json();
+
+    return NextResponse.json({
+      url: checkoutData.checkoutUrl,
+      organizationId,
+    });
   } catch (error: any) {
-    console.error('Stripe checkout error:', error.message);
-    console.error('Error details:', JSON.stringify(error, null, 2));
+    console.error('Checkout error:', error);
     return NextResponse.json(
       {
-        error: 'Failed to create checkout session',
+        error: 'Failed to start checkout',
         details: error.message
       },
       { status: 500 }

@@ -47,7 +47,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/dashboard"
+                  href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
                   className="hover:text-white transition-colors"
                 >
                   Dashboard

@@ -18,7 +18,7 @@ export default function Home() {
                 Pricing
               </a>
               <Link
-                href="/dashboard"
+                href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
               >
                 Sign In

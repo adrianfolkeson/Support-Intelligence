@@ -69,7 +69,7 @@ export default function SettingsPage() {
               Support Intelligence
             </Link>
             <div style={{ display: "flex", gap: "1rem" }}>
-              <Link href="/dashboard" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
+              <Link href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>
                 Dashboard
               </Link>
               <Link href="/upload" style={{ padding: "0.5rem 1rem", border: "1px solid #d1d5db", borderRadius: "0.375rem", fontSize: "0.875rem" }}>

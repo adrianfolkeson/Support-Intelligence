@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Origin': process.env.NEXT_PUBLIC_URL || 'https://supportintelligence.vercel.app',
+        'X-Frontend-Url': process.env.NEXT_PUBLIC_URL || 'https://supportintelligence.vercel.app',
       },
     });
 

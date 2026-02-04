@@ -26,9 +26,12 @@ router.post('/organizations/:id/create-checkout', async (req: Request, res: Resp
 
     const orgName = orgResult.rows[0].name;
 
+    // Get frontend URL from header or use fallback
+    const frontendUrl = req.headers['x-frontend-url'] as string || process.env.FRONTEND_URL || 'https://supportintelligence.vercel.app';
+
     // Create checkout session
-    const successUrl = `${req.headers.origin}/welcome?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${req.headers.origin}/pricing?canceled=true`;
+    const successUrl = `${frontendUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${frontendUrl}/pricing?canceled=true`;
 
     const result = await createCheckoutSession(id, orgName, successUrl, cancelUrl);
 

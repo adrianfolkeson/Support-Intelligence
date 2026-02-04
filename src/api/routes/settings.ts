@@ -115,11 +115,12 @@ router.post('/organizations/:id/settings', async (req: Request, res: Response) =
 router.post('/organizations/:id/sync-zendesk', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orgId = Array.isArray(id) ? id[0] : id;
 
-    console.log(`Manual Zendesk sync triggered for organization: ${id}`);
+    console.log(`Manual Zendesk sync triggered for organization: ${orgId}`);
 
     // Run sync
-    const result = await syncZendeskTickets(id);
+    const result = await syncZendeskTickets(orgId);
 
     res.json({
       success: true,

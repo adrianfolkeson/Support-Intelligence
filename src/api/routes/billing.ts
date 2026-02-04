@@ -16,9 +16,10 @@ const router = Router();
 router.post('/organizations/:id/create-checkout', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orgId = Array.isArray(id) ? id[0] : id;
 
     // Get organization name
-    const orgResult = await query('SELECT name FROM organizations WHERE id = $1', [id]);
+    const orgResult = await query('SELECT name FROM organizations WHERE id = $1', [orgId]);
 
     if (orgResult.rows.length === 0) {
       return res.status(404).json({ error: 'Organization not found' });
@@ -27,13 +28,13 @@ router.post('/organizations/:id/create-checkout', async (req: Request, res: Resp
     const orgName = orgResult.rows[0].name;
 
     // Get frontend URL from header or use fallback
-    const frontendUrl = req.headers['x-frontend-url'] as string || process.env.FRONTEND_URL || 'https://supportintelligence.vercel.app';
+    const frontendUrl = (req.headers['x-frontend-url'] as string) || process.env.FRONTEND_URL || 'https://supportintelligence.vercel.app';
 
     // Create checkout session
     const successUrl = `${frontendUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${frontendUrl}/pricing?canceled=true`;
 
-    const result = await createCheckoutSession(id, orgName, successUrl, cancelUrl);
+    const result = await createCheckoutSession(orgId, orgName, successUrl, cancelUrl);
 
     res.json({ checkoutUrl: result.sessionUrl });
 
@@ -50,10 +51,13 @@ router.post('/organizations/:id/create-checkout', async (req: Request, res: Resp
 router.post('/organizations/:id/create-portal', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orgId = Array.isArray(id) ? id[0] : id;
 
-    const returnUrl = `${req.headers.origin}/settings?org=${id}`;
+    const frontendUrl = (req.headers['x-frontend-url'] as string) || process.env.FRONTEND_URL || 'https://supportintelligence.vercel.app';
 
-    const result = await createBillingPortalSession(id, returnUrl);
+    const returnUrl = `${frontendUrl}/settings?org=${orgId}`;
+
+    const result = await createBillingPortalSession(orgId, returnUrl);
 
     res.json({ portalUrl: result.portalUrl });
 
@@ -70,6 +74,7 @@ router.post('/organizations/:id/create-portal', async (req: Request, res: Respon
 router.get('/organizations/:id/subscription', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const orgId = Array.isArray(id) ? id[0] : id;
 
     const result = await query(
       `SELECT
@@ -79,7 +84,7 @@ router.get('/organizations/:id/subscription', async (req: Request, res: Response
         subscription_current_period_end
        FROM organizations
        WHERE id = $1`,
-      [id]
+      [orgId]
     );
 
     if (result.rows.length === 0) {
@@ -87,7 +92,7 @@ router.get('/organizations/:id/subscription', async (req: Request, res: Response
     }
 
     const org = result.rows[0];
-    const isActive = await hasActiveSubscription(id);
+    const isActive = await hasActiveSubscription(orgId);
 
     res.json({
       status: org.subscription_status,

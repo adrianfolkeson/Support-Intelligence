@@ -66,7 +66,7 @@ export async function fetchZendeskTickets(
         throw new Error(`Zendesk API error (${response.status}): ${errorText}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as { tickets?: ZendeskTicket[], users?: ZendeskUser[] };
       const tickets: ZendeskTicket[] = data.tickets || [];
       const users: ZendeskUser[] = data.users || [];
 
@@ -116,8 +116,8 @@ export async function fetchZendeskTickets(
       }
 
       // Check for pagination
-      hasMore = !!data.next_page;
-      nextPage = data.next_page;
+      hasMore = !!(data as any).next_page;
+      nextPage = (data as any).next_page;
 
       // Zendesk rate limiting: be nice to their API
       if (hasMore) {

@@ -12,13 +12,20 @@ function WelcomeContent() {
   const [loading, setLoading] = useState(true);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const setupOrganization = async () => {
       const sessionId = searchParams.get('session_id');
 
       if (!sessionId) {
-        // No session ID - might be direct access, redirect to pricing
+        // No session ID - redirect to pricing
         router.push('/pricing');
         return;
       }
@@ -43,7 +50,7 @@ function WelcomeContent() {
     };
 
     setupOrganization();
-  }, [searchParams, router]);
+  }, [searchParams, router, mounted]);
 
   const handleGetStarted = () => {
     if (organizationId) {
@@ -56,6 +63,11 @@ function WelcomeContent() {
       router.push(`/settings?org=${organizationId}`);
     }
   };
+
+  // Don't render anything until mounted (prevents SSR issues)
+  if (!mounted) {
+    return null;
+  }
 
   if (loading) {
     return (

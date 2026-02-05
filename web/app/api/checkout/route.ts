@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    const { userId } = await auth();
     const body = await request.json();
     const { organizationName } = body;
 
@@ -20,7 +22,7 @@ export async function POST(request: Request) {
     const orgResponse = await fetch(`${backendUrl}/api/organizations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: organizationName }),
+      body: JSON.stringify({ name: organizationName, userId }),
     });
 
     if (!orgResponse.ok) {

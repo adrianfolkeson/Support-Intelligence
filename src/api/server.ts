@@ -3,6 +3,7 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { query, checkHealth } from '../database/connection';
 import { apiRateLimit, strictRateLimit } from './middleware/rateLimit';
+import { requireAuth, requireOrgAccess } from './middleware/auth';
 import { ingestTickets } from '../services/ingestion';
 import { analyzeTickets } from '../services/analysis';
 import { generateWeeklyReport } from '../services/report-generator';
@@ -84,6 +85,9 @@ app.use(express.json());
 // Apply rate limiting to all API routes
 app.use('/api', apiRateLimit);
 
+// Apply auth to organization-specific routes
+app.use('/api/organizations/:id', requireAuth, requireOrgAccess);
+
 // Upload routes
 app.use('/api', uploadRoutes);
 
@@ -131,7 +135,7 @@ app.get('/api/organizations', async (req, res, next) => {
 // Create organization
 app.post('/api/organizations', async (req, res, next) => {
   try {
-    const { name, external_api_key, external_api_url } = req.body;
+    const { name, external_api_key, external_api_url, userId } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Organization name is required' });
@@ -142,7 +146,17 @@ app.post('/api/organizations', async (req, res, next) => {
       [name, external_api_key, external_api_url]
     );
 
-    res.status(201).json({ organization: result.rows[0] });
+    const org = result.rows[0];
+
+    // Link user to the organization if userId was provided
+    if (userId) {
+      await query(
+        'INSERT INTO user_organizations (user_id, organization_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        [userId, org.id, 'owner']
+      );
+    }
+
+    res.status(201).json({ organization: org });
   } catch (error) {
     next(error);
   }

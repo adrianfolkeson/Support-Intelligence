@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import Papa from 'papaparse';
 import { query } from '../../database/connection';
 
 const router = Router();
@@ -28,36 +29,27 @@ router.post('/upload', async (req: Request, res: Response) => {
       [orgId, organizationName]
     );
 
-    // Parse CSV
-    const lines = csvData.split('\n').filter(line => line.trim());
+    // Parse CSV with papaparse (handles quoted fields, commas in values, etc.)
+    const parsed = Papa.parse<{ customer_id: string; subject: string; message: string }>(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().toLowerCase(),
+    });
 
-    if (lines.length < 2) {
+    if (parsed.data.length === 0) {
       return res.status(400).json({ error: 'CSV file is empty or invalid' });
     }
-
-    // Skip header row
-    const dataLines = lines.slice(1);
 
     let imported = 0;
     const errors: string[] = [];
 
-    for (const line of dataLines) {
-      // Simple CSV parser (handles basic CSV format)
-      // Format: customer_id,subject,message
-      const parts = line.split(',');
-
-      if (parts.length < 3) {
-        errors.push(`Skipping malformed line: ${line.substring(0, 50)}...`);
-        continue;
-      }
-
-      const customer_id = parts[0].trim();
-      const subject = parts[1].trim();
-      // Message might contain commas, so join the rest
-      const message = parts.slice(2).join(',').trim();
+    for (const row of parsed.data) {
+      const customer_id = row.customer_id?.trim();
+      const subject = row.subject?.trim();
+      const message = row.message?.trim();
 
       if (!customer_id || !message) {
-        errors.push('Skipping line with missing customer_id or message');
+        errors.push(`Skipping row with missing customer_id or message`);
         continue;
       }
 
@@ -72,6 +64,21 @@ router.post('/upload', async (req: Request, res: Response) => {
         console.error('Error inserting ticket:', err);
         errors.push(`Failed to insert ticket for customer ${customer_id}`);
       }
+    }
+
+    if (parsed.errors.length > 0) {
+      for (const err of parsed.errors) {
+        errors.push(`CSV parse error on row ${err.row}: ${err.message}`);
+      }
+    }
+
+    // Link the authenticated user to this organization
+    const userId = (req as any).userId;
+    if (userId) {
+      await query(
+        'INSERT INTO user_organizations (user_id, organization_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        [userId, orgId, 'owner']
+      );
     }
 
     console.log(`✓ Imported ${imported} tickets for ${organizationName} (${orgId})`);

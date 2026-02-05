@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { UserButton } from "@clerk/nextjs";
 
 export const dynamic = 'force-dynamic';
 
@@ -187,9 +188,10 @@ export default function DashboardConnectedPage({
               Support Intelligence
             </Link>
             <div className="flex items-center gap-4">
-              <Link href="/settings?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7" className="text-sm font-medium text-gray-700 hover:text-gray-900">
+              <Link href={`/settings?org=${orgId}`} className="text-sm font-medium text-gray-700 hover:text-gray-900">
                 Settings
               </Link>
+              <UserButton afterSignOutUrl="/" />
             </div>
           </div>
         </div>
@@ -333,7 +335,7 @@ export default function DashboardConnectedPage({
                 Connect your Zendesk account to start analyzing support tickets.
               </p>
               <Link
-                href="/settings?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
+                href={`/settings?org=${orgId}`}
                 className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
               >
                 Connect Zendesk
@@ -426,7 +428,7 @@ export default function DashboardConnectedPage({
           </button>
 
           <Link
-            href="/settings?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
+            href={`/settings?org=${orgId}`}
             className="p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all text-left"
           >
             <div className="flex items-center gap-3 mb-3">

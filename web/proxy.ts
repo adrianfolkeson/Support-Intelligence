@@ -21,7 +21,7 @@ const isClerkConfigured =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
   process.env.CLERK_SECRET_KEY;
 
-function middleware(request: NextRequest) {
+function proxy(request: NextRequest) {
   // Clerk not configured — let all requests through
   return NextResponse.next();
 }
@@ -32,7 +32,7 @@ export default isClerkConfigured
         await auth.protect();
       }
     })
-  : middleware;
+  : proxy;
 
 export const config = {
   matcher: [

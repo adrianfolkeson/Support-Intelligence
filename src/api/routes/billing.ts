@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { query } from '../../database/connection';
 import {
   createCheckoutSession,
@@ -8,6 +9,39 @@ import {
 } from '../../services/stripe-service';
 
 const router = Router();
+
+/**
+ * POST /api/organizations
+ * Create a new organization
+ */
+router.post('/organizations', async (req: Request, res: Response) => {
+  try {
+    const { name, userId } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Organization name is required' });
+    }
+
+    // Generate unique organization ID
+    const orgId = uuidv4();
+
+    // Insert organization with trial status
+    const result = await query(
+      `INSERT INTO organizations (id, name, created_at, subscription_status, subscription_plan, trial_ends_at)
+       VALUES ($1, $2, NOW(), 'trial', 'pro', NOW() + INTERVAL '30 days')
+       RETURNING id, name, subscription_status, subscription_plan, trial_ends_at`,
+      [orgId, name]
+    );
+
+    const organization = result.rows[0];
+
+    res.status(201).json({ organization });
+
+  } catch (error: any) {
+    console.error('Create organization error:', error);
+    res.status(500).json({ error: error.message || 'Failed to create organization' });
+  }
+});
 
 /**
  * POST /api/organizations/:id/create-checkout

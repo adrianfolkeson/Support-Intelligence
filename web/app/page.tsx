@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
@@ -17,18 +18,28 @@ export default function Home() {
               <a href="#pricing" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
                 Pricing
               </a>
-              <Link
-                href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/pricing"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-              >
-                Get Started
-              </Link>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <Link
+                  href="/pricing"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  Get Started
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <Link
+                  href="/dashboard-connected"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  Dashboard
+                </Link>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
             </div>
           </div>
         </div>

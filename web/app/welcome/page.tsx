@@ -1,14 +1,15 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function WelcomePage() {
-  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  const sessionId = params.get('session_id');
-  
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
+  const { session_id: sessionId } = await searchParams;
+
   if (!sessionId) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/pricing';
-    }
-    return null;
+    redirect("/pricing");
   }
 
   return (

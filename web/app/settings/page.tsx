@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 
 // Force dynamic rendering - prevent prerendering at build time
 export const dynamic = 'force-dynamic';
@@ -96,6 +97,7 @@ export default function SettingsPage() {
               >
                 Upload CSV
               </Link>
+              <UserButton afterSignOutUrl="/" />
             </div>
           </div>
         </div>

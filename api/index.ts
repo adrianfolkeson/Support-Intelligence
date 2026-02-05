@@ -1,6 +1,3 @@
-import { createServer } from 'http';
-import { parse } from 'url';
-import next from 'next';
 import app from '../src/api/server';
 
 // For Vercel serverless deployment

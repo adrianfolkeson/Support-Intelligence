@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 // Pricing page with Stripe checkout
 export const dynamic = 'force-dynamic';
@@ -45,11 +46,18 @@ export default function PricingPage() {
             <Link href="/" className="text-xl font-bold text-gray-900">
               Support Intelligence
             </Link>
-            <Link href="/">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                Back to Home
-              </button>
-            </Link>
+            <div className="flex gap-4 items-center">
+              <SignedIn>
+                <UserButton afterSignOutUrl="/pricing"/>
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                    Sign In
+                  </button>
+                </SignInButton>
+              </SignedOut>
+            </div>
           </div>
         </div>
       </nav>

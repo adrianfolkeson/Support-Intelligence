@@ -22,6 +22,10 @@ router.post('/organizations', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Organization name is required' });
     }
 
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
     // Generate unique organization ID
     const orgId = uuidv4();
 
@@ -34,6 +38,13 @@ router.post('/organizations', async (req: Request, res: Response) => {
     );
 
     const organization = result.rows[0];
+
+    // Link user to organization
+    await query(
+      `INSERT INTO user_organizations (user_id, organization_id, role)
+       VALUES ($1, $2, 'owner')`,
+      [userId, orgId]
+    );
 
     res.status(201).json({ organization });
 

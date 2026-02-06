@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
+    // Generate a temporary user ID for the checkout session
+    const tempUserId = `temp-${Date.now()}`;
+
     const body = await request.json();
     const { organizationName } = body;
 
@@ -18,11 +19,11 @@ export async function POST(request: Request) {
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
 
-    // Create organization first
+    // Create organization first (without userId for now)
     const orgResponse = await fetch(`${backendUrl}/api/organizations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: organizationName, userId }),
+      body: JSON.stringify({ name: organizationName, userId: tempUserId }),
     });
 
     if (!orgResponse.ok) {

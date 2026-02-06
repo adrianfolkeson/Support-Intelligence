@@ -134,22 +134,13 @@ export default function PricingPage() {
                   </ul>
                 </div>
 
-                <SignedIn>
-                  <button
-                    onClick={handleSubscribe}
-                    disabled={loading}
-                    className="w-full py-5 text-center text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                  >
-                    {loading ? 'Starting...' : 'Start 30 day free trial'}
-                  </button>
-                </SignedIn>
-                <SignedOut>
-                  <SignInButton mode="modal">
-                    <button className="w-full py-5 text-center text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
-                      Sign in to start free trial
-                    </button>
-                  </SignInButton>
-                </SignedOut>
+                <button
+                  onClick={handleSubscribe}
+                  disabled={loading}
+                  className="w-full py-5 text-center text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                >
+                  {loading ? 'Starting...' : 'Start 30 day free trial'}
+                </button>
 
                 <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
                   <div className="flex items-center gap-2">

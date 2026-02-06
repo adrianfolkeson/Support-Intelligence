@@ -138,3 +138,4 @@ vercel
 - For production, deploy frontend separately (Vercel) and update API base URL
 # Deployment fre 30 jan. 2026 12:44:15 CET
 # tors  5 feb. 2026 22:43:00 CET
+# Updated fre  6 feb. 2026 22:13:27 CET

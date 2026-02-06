@@ -9,7 +9,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 export default function PricingPage() {
   const router = useRouter();
-  const { isLoaded, isSignedIn, signIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
@@ -17,7 +17,7 @@ export default function PricingPage() {
 
     // If not signed in, redirect to sign in
     if (!isSignedIn) {
-      signIn({ redirectUrl: "/pricing" });
+      router.push("/sign-in?redirectUrl=/pricing");
       return;
     }
 

@@ -2,16 +2,25 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function PricingPage() {
   const router = useRouter();
+  const { isLoaded, isSignedIn, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
+    if (!isLoaded) return;
+
+    // If not signed in, redirect to sign in
+    if (!isSignedIn) {
+      signIn({ redirectUrl: "/pricing" });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const organizationName = `Customer-${Date.now()}`;
@@ -56,7 +65,7 @@ export default function PricingPage() {
             Simple, transparent pricing
           </h1>
           <p className="mt-4 text-lg text-gray-600">
-            Start your 30-day free trial. No credit card required.
+            Start your 30-day free trial today.
           </p>
         </div>
 
@@ -89,7 +98,7 @@ export default function PricingPage() {
 
               <button
                 onClick={handleSubscribe}
-                disabled={isLoading}
+                disabled={isLoading || !isLoaded}
                 className="mt-8 w-full rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? (
@@ -101,10 +110,6 @@ export default function PricingPage() {
                   "Start 30-Day Free Trial"
                 )}
               </button>
-
-              <p className="mt-4 text-center text-sm text-gray-500">
-                No credit card required to start
-              </p>
             </CardContent>
           </Card>
         </div>
@@ -119,10 +124,6 @@ export default function PricingPage() {
               {
                 q: "What happens after the trial?",
                 a: "After 30 days, you'll be charged $149/month. You can cancel anytime before the trial ends with no charge.",
-              },
-              {
-                q: "Can I change plans later?",
-                a: "Yes, you can upgrade or downgrade your plan at any time from your settings.",
               },
               {
                 q: "What payment methods do you accept?",

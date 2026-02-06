@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     const body = await request.json();
     const { organizationName } = body;
 
@@ -14,12 +14,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const token = await getToken();
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-    // Create organization
+    // Create organization via billing routes
     const orgResponse = await fetch(`${backendUrl}/api/organizations`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
       body: JSON.stringify({ name: organizationName, userId }),
     });
 
@@ -38,6 +42,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
           "X-Frontend-Url": process.env.NEXT_PUBLIC_URL || "",
         },
       }

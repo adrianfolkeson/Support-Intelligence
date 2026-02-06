@@ -97,6 +97,33 @@ app.use('/api', settingsRoutes);
 // Billing routes
 app.use('/api', billingRoutes);
 
+// Admin endpoint to run migrations
+app.post('/admin/migrate', async (req, res) => {
+  try {
+    const sql = `
+      CREATE TABLE IF NOT EXISTS user_organizations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+        role TEXT NOT NULL DEFAULT 'owner',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE(user_id, organization_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_user_organizations_user_id ON user_organizations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_user_organizations_org_id ON user_organizations(organization_id);
+    `;
+
+    await query(sql);
+    console.log('Migration completed: user_organizations table created');
+
+    res.json({ success: true, message: 'Migration completed successfully' });
+  } catch (error: any) {
+    console.error('Migration error:', error);
+    res.status(500).json({ error: error.message || 'Migration failed' });
+  }
+});
+
 // Middleware: Error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('API Error:', err);

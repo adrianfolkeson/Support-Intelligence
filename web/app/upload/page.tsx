@@ -1,274 +1,215 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@clerk/nextjs";
+import { Upload, FileText, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileUpload } from "@/components/file-upload";
+import { Spinner } from "@/components/ui/spinner";
+import { fetchAPI } from "@/lib/api";
+import { ToastProvider, useToast } from "@/components/ui/toast";
 
-export const dynamic = 'force-dynamic';
-
-export default function UploadPage() {
+function UploadContent() {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
-  const [organizationName, setOrganizationName] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [progress, setProgress] = useState("");
-  const [error, setError] = useState("");
+  const { getToken } = useAuth();
+  const { showToast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      if (!selectedFile.name.endsWith('.csv')) {
-        setError('Please select a CSV file');
-        return;
-      }
-      setFile(selectedFile);
-      setError('');
-    }
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState<{ count: number } | null>(null);
+
+  const handleFileSelect = (selectedFile: File) => {
+    setFile(selectedFile);
+    setResult(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpload = async () => {
+    if (!file) return;
 
-    if (!file || !organizationName.trim()) {
-      setError('Please provide both a file and organization name');
+    // Get orgId from cookie
+    const getOrgId = () => {
+      const cookies = document.cookie.split(";");
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split("=");
+        if (name === "orgId") return value;
+      }
+      return null;
+    };
+
+    const orgIdFromCookie = getOrgId();
+    if (!orgIdFromCookie) {
+      showToast("Please complete your account setup first", "error");
+      router.push("/welcome");
       return;
     }
 
     setUploading(true);
-    setError('');
-    setProgress('Uploading CSV...');
-
     try {
-      // Read file content
-      const text = await file.text();
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const csvData = e.target?.result as string;
 
-      setProgress('Parsing tickets...');
+        try {
+          const token = await getToken();
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              organizationId: orgIdFromCookie,
+              csvData,
+            }),
+          });
 
-      // Get backend URL
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://support-intelligence-backend.vercel.app';
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Upload failed");
+          }
 
-      // Send to backend
-      const response = await fetch(`${backendUrl}/api/upload`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          organizationName,
-          csvData: text,
-        }),
-      });
+          const data = await response.json();
+          setResult({ count: data.importedCount || data.count || 0 });
+          showToast(`Successfully imported ${data.importedCount || data.count || 0} tickets`, "success");
+        } catch (error: any) {
+          console.error("Upload error:", error);
+          showToast(error.message || "Failed to upload file", "error");
+        } finally {
+          setUploading(false);
+        }
+      };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
+      reader.onerror = () => {
+        showToast("Failed to read file", "error");
+        setUploading(false);
+      };
 
-      const result = await response.json();
-
-      setProgress(`Imported ${result.ticketCount} tickets. Starting AI analysis...`);
+      reader.readAsText(file);
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      showToast(error.message || "Failed to upload file", "error");
       setUploading(false);
-      setAnalyzing(true);
-
-      // Start analysis
-      const analyzeResponse = await fetch(`${backendUrl}/api/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          organizationId: result.organizationId,
-        }),
-      });
-
-      if (!analyzeResponse.ok) {
-        throw new Error('Analysis failed');
-      }
-
-      const analyzeResult = await analyzeResponse.json();
-
-      setProgress(`✓ Complete! Analyzed ${analyzeResult.ticketsAnalyzed} tickets`);
-
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        router.push(`/dashboard-connected?org=${result.organizationId}`);
-      }, 2000);
-
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
-      setUploading(false);
-      setAnalyzing(false);
-      setProgress('');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <Link href="/" className="text-xl font-bold text-gray-900">
-              Support Intelligence
-            </Link>
-            <Link href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7">
-              <Button variant="outline">View Dashboard</Button>
-            </Link>
-          </div>
+    <div className="px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-8 text-center sm:text-left">
+          <h1 className="text-3xl font-bold text-gray-900">Upload Support Tickets</h1>
+          <p className="mt-2 text-gray-600">
+            Import your support tickets from a CSV file
+          </p>
         </div>
-      </nav>
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card>
+        {/* CSV Format Instructions */}
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Upload Support Tickets</CardTitle>
-            <CardDescription>
-              Import your support tickets from Zendesk, Intercom, or any CSV export
-            </CardDescription>
+            <CardTitle className="text-lg">CSV Format Requirements</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Organization Name */}
-              <div>
-                <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Organization Name
-                </label>
-                <input
-                  id="orgName"
-                  type="text"
-                  value={organizationName}
-                  onChange={(e) => setOrganizationName(e.target.value)}
-                  placeholder="Acme Corp"
-                  disabled={uploading || analyzing}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              {/* File Upload */}
-              <div>
-                <label htmlFor="csvFile" className="block text-sm font-medium text-gray-700 mb-2">
-                  CSV File
-                </label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400">
-                  <div className="space-y-1 text-center">
-                    <svg
-                      className="mx-auto h-12 w-12 text-gray-400"
-                      stroke="currentColor"
-                      fill="none"
-                      viewBox="0 0 48 48"
-                    >
-                      <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <div className="flex text-sm text-gray-600">
-                      <label
-                        htmlFor="csvFile"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none"
-                      >
-                        <span>Upload a file</span>
-                        <input
-                          id="csvFile"
-                          type="file"
-                          accept=".csv"
-                          onChange={handleFileChange}
-                          disabled={uploading || analyzing}
-                          className="sr-only"
-                          required
-                        />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">CSV file with customer_id, subject, message</p>
-                  </div>
-                </div>
-                {file && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
-                  </p>
-                )}
-              </div>
-
-              {/* CSV Format Help */}
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">CSV Format Required:</h4>
-                <pre className="text-xs text-blue-800 bg-white p-2 rounded border border-blue-100 overflow-x-auto">
-customer_id,subject,message{'\n'}
-user123,Login issue,I can't log in to my account{'\n'}
-user456,Feature request,Would love dark mode
-                </pre>
-              </div>
-
-              {/* Progress/Error Messages */}
-              {progress && (
-                <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                  <p className="text-sm text-green-800">{progress}</p>
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={uploading || analyzing || !file || !organizationName.trim()}
-                className="w-full"
-              >
-                {uploading
-                  ? 'Uploading...'
-                  : analyzing
-                  ? 'Analyzing with AI...'
-                  : 'Upload and Analyze'}
-              </Button>
-
-              {analyzing && (
-                <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              )}
-            </form>
+            <p className="mb-4 text-gray-600">
+              Your CSV file should include the following columns:
+            </p>
+            <div className="overflow-x-auto rounded-lg bg-gray-900 p-4">
+              <code className="text-sm text-gray-100">
+                customer_id,subject,message
+              </code>
+            </div>
+            <div className="mt-4 rounded-lg bg-blue-50 p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Example:</strong>
+              </p>
+              <pre className="mt-2 text-xs text-blue-700">
+{`C001,Login issue,I can't log into my account
+C002,Billing question,I was charged twice this month
+C003,Feature request,Can you add dark mode?`}
+              </pre>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Instructions */}
-        <div className="mt-8 space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">How to export tickets:</h3>
+        {/* Upload Area */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Upload File
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!result ? (
+              <>
+                <FileUpload
+                  onFileSelect={handleFileSelect}
+                  accept=".csv"
+                />
 
-          <div className="space-y-3">
-            <div className="bg-white p-4 rounded-lg border">
-              <h4 className="font-medium text-gray-900 mb-1">Zendesk</h4>
-              <p className="text-sm text-gray-600">
-                Admin → Reporting → Export → Tickets → Select date range → Export as CSV
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg border">
-              <h4 className="font-medium text-gray-900 mb-1">Intercom</h4>
-              <p className="text-sm text-gray-600">
-                Inbox → Conversations → Filter by date → Export → Download CSV
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg border">
-              <h4 className="font-medium text-gray-900 mb-1">Freshdesk</h4>
-              <p className="text-sm text-gray-600">
-                Reports → Ticket Reports → Export → CSV format
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
+                {file && (
+                  <div className="mt-6">
+                    <p className="text-sm text-gray-600">
+                      Selected file: <span className="font-medium">{file.name}</span>
+                    </p>
+                    <Button
+                      onClick={handleUpload}
+                      disabled={uploading}
+                      className="mt-4"
+                    >
+                      {uploading ? (
+                        <>
+                          <Spinner size="sm" className="mr-2" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="py-8 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-gray-900">
+                  Upload Complete!
+                </h3>
+                <p className="mt-2 text-gray-600">
+                  Successfully imported {result.count} ticket{result.count !== 1 ? "s" : ""}.
+                </p>
+                <div className="mt-6 flex justify-center gap-4">
+                  <Button onClick={() => router.push("/dashboard")}>
+                    Go to Dashboard
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFile(null);
+                      setResult(null);
+                    }}
+                  >
+                    Upload More
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
+  );
+}
+
+export default function UploadPage() {
+  return (
+    <ToastProvider>
+      <UploadContent />
+    </ToastProvider>
   );
 }

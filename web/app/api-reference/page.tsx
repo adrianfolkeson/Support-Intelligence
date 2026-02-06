@@ -1,178 +1,201 @@
-import Link from "next/link";
-import { Logo } from "@/components/ui/logo";
-
-export const metadata = {
-  title: "API Reference - Support Intelligence",
-  description: "API Reference for Support Intelligence",
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ApiReferencePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <Logo size="md" />
-            </div>
-            <nav className="flex gap-4">
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/pricing"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-              >
-                Get Started
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="text-4xl font-bold text-gray-900">API Reference</h1>
+        <p className="mt-4 text-lg text-gray-600">
+          Complete API documentation for integrating with Support Intelligence.
+        </p>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          API Reference
-        </h1>
-
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Base URL
-          </h2>
-          <code className="bg-gray-900 text-gray-100 px-4 py-2 rounded-lg block">
-            https://api.support-intelligence.ai/v1
-          </code>
-        </div>
-
-        <div className="space-y-8">
-          {/* Organizations */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Organizations
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  GET /organizations
-                </h3>
+        <div className="mt-12 space-y-8">
+          {/* Authentication */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Authentication</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <p className="text-gray-600 mb-4">
-                  List all organizations for the authenticated user.
+                  All API requests require authentication using your Clerk JWT token. Include the token
+                  in the Authorization header:
                 </p>
-                <h4 className="font-medium text-gray-900 mb-2">Response:</h4>
-                <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-{`{
-  "organizations": [
-    {
-      "id": "org_123",
-      "name": "Acme Inc",
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ]
-}`}
+                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <code>Authorization: Bearer YOUR_CLERK_TOKEN</code>
                 </pre>
-              </div>
+              </CardContent>
+            </Card>
+          </section>
 
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  GET /organizations/:id
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Get organization details including subscription status.
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Base URL */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Base URL</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <code>https://support-intelligence-backend.vercel.app</code>
+                </pre>
+              </CardContent>
+            </Card>
+          </section>
 
-          {/* Tickets */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Tickets
-            </h2>
+          {/* Endpoints */}
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Endpoints</h2>
 
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  GET /organizations/:id/tickets
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  List all tickets for an organization with optional filtering.
-                </p>
-                <h4 className="font-medium text-gray-900 mb-2">Query Parameters:</h4>
-                <ul className="list-disc list-inside text-gray-600 mb-4">
-                  <li>limit - Number of tickets to return (default: 50)</li>
-                  <li>offset - Pagination offset (default: 0)</li>
+            {/* Get Dashboard */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-green-100 px-2 py-1 text-sm font-medium text-green-700">GET</span>
+                  <CardTitle className="text-lg">/api/organizations/{'{orgId}'}/dashboard</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Get dashboard statistics including ticket counts and risk summaries.</p>
+                <p className="text-sm font-medium text-gray-900">Response:</p>
+                <pre className="mt-2 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <code>{`{
+  "totalTickets": 1250,
+  "analyzedTickets": 1180,
+  "highRiskCount": 42,
+  "averageRiskScore": 4.2
+}`}</code>
+                </pre>
+              </CardContent>
+            </Card>
+
+            {/* Get Tickets */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-green-100 px-2 py-1 text-sm font-medium text-green-700">GET</span>
+                  <CardTitle className="text-lg">/api/organizations/{'{orgId}'}/tickets</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Get all tickets with optional pagination.</p>
+                <p className="text-sm font-medium text-gray-900">Query Parameters:</p>
+                <ul className="mt-2 text-sm text-gray-600">
+                  <li>• <code className="bg-gray-100 px-1 rounded">limit</code> - Number of results (default: 20)</li>
+                  <li>• <code className="bg-gray-100 px-1 rounded">offset</code> - Pagination offset</li>
                 </ul>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  GET /organizations/:id/churn-risk
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Get tickets with high churn risk scores.
+            {/* Get Ticket */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-green-100 px-2 py-1 text-sm font-medium text-green-700">GET</span>
+                  <CardTitle className="text-lg">/api/tickets/{'{ticketId}'}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Get detailed information about a specific ticket including AI analysis.</p>
+                <p className="text-sm font-medium text-gray-900">Response:</p>
+                <pre className="mt-2 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <code>{`{
+  "id": "ticket_123",
+  "customerEmail": "customer@example.com",
+  "subject": "Login issue",
+  "message": "Full message text...",
+  "sentiment": "negative",
+  "frustrationLevel": 7,
+  "churnRisk": 8,
+  "keyIssues": ["repeated problem", "delayed response"],
+  "recommendedAction": "Priority follow-up required",
+  "createdAt": "2026-02-01T10:00:00Z"
+}`}</code>
+                </pre>
+              </CardContent>
+            </Card>
+
+            {/* Get Reports */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-green-100 px-2 py-1 text-sm font-medium text-green-700">GET</span>
+                  <CardTitle className="text-lg">/api/organizations/{'{orgId}'}/reports</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Get all weekly reports for the organization.</p>
+              </CardContent>
+            </Card>
+
+            {/* Sync Zendesk */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700">POST</span>
+                  <CardTitle className="text-lg">/api/organizations/{'{orgId}'}/sync-zendesk</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Trigger a manual sync of tickets from Zendesk.</p>
+              </CardContent>
+            </Card>
+
+            {/* Update Settings */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700">POST</span>
+                  <CardTitle className="text-lg">/api/organizations/{'{orgId}'}/settings</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Update organization settings including Zendesk configuration.</p>
+                <p className="text-sm font-medium text-gray-900">Request Body:</p>
+                <pre className="mt-2 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <code>{`{
+  "zendeskSubdomain": "yourcompany",
+  "zendeskEmail": "support@yourcompany.com",
+  "zendeskApiToken": "your_api_token"
+}`}</code>
+                </pre>
+              </CardContent>
+            </Card>
+
+            {/* Upload CSV */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700">POST</span>
+                  <CardTitle className="text-lg">/api/upload</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Upload a CSV file of support tickets.</p>
+                <p className="text-sm font-medium text-gray-900">Request Body:</p>
+                <pre className="mt-2 overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <code>{`{
+  "organizationName": "Your Organization",
+  "csvData": "customer_id,subject,message\\n..."
+}`}</code>
+                </pre>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Rate Limits */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Rate Limits</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  API requests are limited to 100 requests per minute per organization.
+                  Exceeding this limit will return a 429 status code.
                 </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Analysis */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Analysis
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  POST /organizations/:id/analyze
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Trigger AI analysis for unanalyzed tickets.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  GET /organizations/:id/dashboard
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Get dashboard analytics including ticket counts, churn metrics, and recent tickets.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Reports */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Reports
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  GET /organizations/:id/reports
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  List weekly reports for an organization.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  POST /organizations/:id/generate-report
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Generate a new weekly report.
-                </p>
-              </div>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+          </section>
         </div>
       </div>
     </div>

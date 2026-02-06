@@ -1,257 +1,147 @@
 import Link from "next/link";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Logo } from "@/components/ui/logo";
+import { ArrowRight, Brain, Shield, Zap, BarChart3, Mail, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function LandingPage() {
+  const features = [
+    { icon: Brain, title: "AI-Powered Analysis", description: "Advanced AI models analyze every support ticket for sentiment and churn indicators" },
+    { icon: AlertTriangle, title: "Churn Risk Scoring", description: "Each customer gets a 1-10 risk score based on their support interactions" },
+    { icon: Zap, title: "Zendesk Integration", description: "One-click integration with Zendesk. Set up in minutes, not hours" },
+    { icon: BarChart3, title: "Weekly Reports", description: "Comprehensive weekly reports summarizing trends and at-risk customers" },
+    { icon: Mail, title: "Email Alerts", description: "Instant notifications when high-risk customers need attention" },
+    { icon: Shield, title: "Privacy First", description: "Enterprise-grade security. Your data is encrypted and never shared" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      <nav className="border-b bg-white/80 backdrop-blur-sm fixed w-full z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <Logo size="md" />
-            </div>
-            <div className="flex gap-4 items-center">
-              <a href="#features" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
-                Features
-              </a>
-              <a href="#pricing" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
-                Pricing
-              </a>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <Link
-                  href="/pricing"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-                >
-                  Get Started
-                </Link>
-              </SignedOut>
-              <SignedIn>
-                <Link
-                  href="/dashboard-connected"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-                >
-                  Dashboard
-                </Link>
-                <UserButton afterSignOutUrl="/" />
-              </SignedIn>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="pt-24">
-        {/* Hero Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
-              <span className="w-2 h-2 bg-blue-600 rounded-full mr-2 animate-pulse"></span>
-              Now with Zendesk Integration
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Turn Support Tickets Into
-              <span className="text-blue-600"> Business Insights</span>
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              AI-powered analysis that identifies customer patterns, predicts churn risk, 
-              and helps your support team work smarter. Save 10+ hours per week.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/pricing"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Start 30-Day Free Trial
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
-            </div>
-            <p className="mt-4 text-sm text-gray-500">
-              No credit card required • Setup in 5 minutes • Cancel anytime
-            </p>
-          </div>
-
-          {/* Social Proof */}
-          <div className="mt-16 text-center">
-            <p className="text-sm text-gray-500 mb-6">Trusted by support teams at</p>
-            <div className="flex justify-center items-center gap-8 opacity-50 grayscale">
-              <span className="text-2xl font-bold text-gray-400">Zendesk</span>
-              <span className="text-2xl font-bold text-gray-400">Slack</span>
-              <span className="text-2xl font-bold text-gray-400">Stripe</span>
-              <span className="text-2xl font-bold text-gray-400">Notion</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Features Section */}
-        <div className="bg-white py-20" id="features">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Everything you need to optimize support
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                From ticket analysis to churn prediction, get insights that help you deliver better customer experiences.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">AI</div>
-                <h3 className="text-xl font-semibold mb-2">AI-Powered Analysis</h3>
-                <p className="text-gray-600">
-                  Automatically analyze sentiment, frustration level, and churn risk for every ticket using Claude AI.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">🔔</div>
-                <h3 className="text-xl font-semibold mb-2">Instant Alerts</h3>
-                <p className="text-gray-600">
-                  Get email notifications when customers show high churn risk (≥8/10) so you can act fast.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">📊</div>
-                <h3 className="text-xl font-semibold mb-2">Evidence-Based Insights</h3>
-                <p className="text-gray-600">
-                  See exactly why AI rated each ticket with specific evidence from customer messages.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">🔗</div>
-                <h3 className="text-xl font-semibold mb-2">Zendesk Integration</h3>
-                <p className="text-gray-600">
-                  Connect your Zendesk account for automatic ticket sync. No manual data entry required.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">📈</div>
-                <h3 className="text-xl font-semibold mb-2">Weekly Reports</h3>
-                <p className="text-gray-600">
-                  Get comprehensive weekly reports with trends, patterns, and actionable recommendations.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-4xl mb-4">🛡️</div>
-                <h3 className="text-xl font-semibold mb-2">Privacy First</h3>
-                <p className="text-gray-600">
-                  Your data stays yours. Enterprise-grade security with no training on your tickets.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Pricing Section */}
-        <div className="py-20" id="pricing">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Simple, transparent pricing
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                One plan, all features. No hidden fees, no surprises.
-              </p>
-            </div>
-
-            <div className="max-w-md mx-auto">
-              <div className="bg-white border-2 border-blue-600 rounded-2xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Professional</h3>
-                  <p className="text-gray-600">For growing support teams</p>
-                </div>
-
-                <div className="text-center mb-8">
-                  <span className="text-5xl font-bold text-gray-900">$249</span>
-                  <span className="text-gray-600">/month</span>
-                </div>
-
-                <ul className="space-y-4 mb-8">
-                  {[
-                    'Up to 2,000 tickets per month',
-                    'AI-powered ticket analysis',
-                    'Churn risk predictions',
-                    'Zendesk integration',
-                    'Weekly insight reports',
-                    'Email alerts for high-risk tickets',
-                    'Priority support',
-                    '30-day free trial',
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-center">
-                      <svg className="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/pricing"
-                  className="block w-full py-4 text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-medium transition-colors"
-                >
-                  Start Free Trial
-                </Link>
-                <p className="mt-4 text-center text-sm text-gray-500">
-                  Cancel anytime. No questions asked.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="bg-blue-600 py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Ready to optimize your support team?
-            </h2>
-            <p className="text-xl text-blue-100 mb-8">
-              Join companies using Support Intelligence to deliver better customer experiences.
-            </p>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center px-8 py-4 text-lg font-medium text-blue-600 bg-white rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              Get Started Free
-              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl text-center">
+          <h1 className="text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
+            AI-powered churn prevention, simplified
+          </h1>
+          <p className="mt-6 text-lg text-blue-100 sm:text-xl lg:mx-auto lg:max-w-2xl">
+            Predict customer churn before it happens. Automatic AI analysis of your support tickets.
+            Start your 30-day free trial.
+          </p>
+          <div className="mt-10 flex justify-center gap-4">
+            <Link href="/pricing">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/documentation">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                Learn More
+              </Button>
             </Link>
           </div>
         </div>
-      </main>
+      </section>
 
-      <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <Logo size="sm" />
-              <p className="mt-2 text-sm">AI-powered support intelligence</p>
-            </div>
-            <div className="flex gap-8">
-              <a href="/documentation" className="hover:text-white transition-colors">Documentation</a>
-              <a href="/api-reference" className="hover:text-white transition-colors">API</a>
-              <a href="/support" className="hover:text-white transition-colors">Support</a>
-              <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
-            </div>
+      {/* Features Section */}
+      <section className="px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+              Everything you need to prevent churn
+            </h2>
+            <p className="mt-4 text-lg text-gray-600">
+              Powerful features that help you identify and retain at-risk customers
+            </p>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-sm text-center">
-            © 2024 Support Intelligence. All rights reserved.
+
+          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <div key={feature.title} className="rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                  <feature.icon className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-gray-900">{feature.title}</h3>
+                <p className="mt-2 text-gray-600">{feature.description}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Social Proof */}
+      <section className="bg-gray-50 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl text-center">
+          <h3 className="text-2xl font-bold text-gray-900">
+            Trusted by SaaS companies worldwide
+          </h3>
+          <p className="mt-4 text-gray-600">
+            Join hundreds of companies using AI to reduce churn and improve customer retention
+          </p>
+        </div>
+      </section>
+
+      {/* Pricing Preview */}
+      <section className="px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+              Simple, transparent pricing
+            </h2>
+            <p className="mt-4 text-lg text-gray-600">
+              Start your 30-day free trial. No credit card required.
+            </p>
+          </div>
+
+          <div className="mt-12 flex justify-center">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg ring-1 ring-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Professional</h3>
+              <div className="mt-4 flex items-baseline">
+                <span className="text-4xl font-bold text-gray-900">$149</span>
+                <span className="ml-2 text-gray-500">/month</span>
+                <span className="ml-3 text-lg text-gray-400 line-through">$249</span>
+              </div>
+              <ul className="mt-6 space-y-4">
+                {[
+                  "Up to 2,000 tickets/month",
+                  "AI churn risk analysis",
+                  "Zendesk integration",
+                  "Weekly insight reports",
+                  "Email alerts for high-risk",
+                  "Priority support",
+                ].map((item) => (
+                  <li key={item} className="flex items-center text-gray-600">
+                    <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="ml-3">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/pricing" className="mt-8 block">
+                <Button className="w-full">Start 30-Day Free Trial</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            Ready to reduce churn?
+          </h2>
+          <p className="mt-4 text-lg text-blue-100">
+            Start your free trial today and see which customers are at risk.
+          </p>
+          <div className="mt-8">
+            <Link href="/pricing">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                Get Started Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

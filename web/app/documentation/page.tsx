@@ -1,175 +1,137 @@
-import Link from "next/link";
-import { Logo } from "@/components/ui/logo";
-
-export const metadata = {
-  title: "Documentation - Support Intelligence",
-  description: "Learn how to use Support Intelligence AI-powered ticket analysis",
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DocumentationPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <Logo size="md" />
-            </div>
-            <nav className="flex gap-4">
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/pricing"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-              >
-                Get Started
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="text-4xl font-bold text-gray-900">Documentation</h1>
+        <p className="mt-4 text-lg text-gray-600">
+          Learn how Support Intelligence works and how to get the most out of it.
+        </p>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Documentation
-        </h1>
+        <div className="mt-12 space-y-8">
+          {/* How It Works */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>How Support Intelligence Works</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold">1</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Connect Your Data</h3>
+                    <p className="text-gray-600">
+                      Integrate with Zendesk or upload a CSV of your support tickets. Our system
+                      securely ingests your ticket data including customer emails, subjects, and messages.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold">2</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">AI Analysis</h3>
+                    <p className="text-gray-600">
+                      Our AI analyzes each ticket for sentiment, frustration level, and churn risk indicators.
+                      We look at language patterns, issue types, and customer history.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white font-bold">3</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Get Insights</h3>
+                    <p className="text-gray-600">
+                      View risk scores in your dashboard, receive weekly reports, and get instant alerts
+                      when high-risk customers need attention.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Sidebar */}
-          <div className="md:col-span-1">
-            <nav className="space-y-2">
-              <a
-                href="#getting-started"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                Getting Started
-              </a>
-              <a
-                href="#quick-start"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                Quick Start Guide
-              </a>
-              <a
-                href="#features"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                Features Overview
-              </a>
-              <a
-                href="#api"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                API Reference
-              </a>
-              <a
-                href="#integrations"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                Integrations
-              </a>
-              <a
-                href="#billing"
-                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-              >
-                Billing & Plans
-              </a>
-            </nav>
-          </div>
+          {/* AI Analysis */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Analysis Explained</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">Sentiment Analysis</h3>
+                  <p className="mt-1 text-gray-600">
+                    Each ticket is analyzed for positive, neutral, or negative sentiment. This helps
+                    identify unhappy customers even when they don&apos;t explicitly express frustration.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Frustration Detection</h3>
+                  <p className="mt-1 text-gray-600">
+                    Our AI detects signs of frustration including aggressive language, repeated issues,
+                    threats to cancel, and expressions of disappointment.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">Churn Prediction</h3>
+                  <p className="mt-1 text-gray-600">
+                    By combining sentiment, frustration, and historical patterns, we predict the likelihood
+                    of customer churn on a 1-10 scale.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
 
-          {/* Content */}
-          <div className="md:col-span-2 space-y-12">
-            <section id="getting-started">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Getting Started
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Welcome to Support Intelligence! This documentation will help you
-                understand how to use our AI-powered ticket analysis platform to
-                predict churn and improve customer retention.
-              </p>
-            </section>
+          {/* Risk Scoring */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Churn Risk Scoring Methodology</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-700 font-bold">1-4</div>
+                  <div>
+                    <p className="font-medium text-gray-900">Low Risk</p>
+                    <p className="text-sm text-gray-600">Customer is satisfied, no churn indicators detected</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 text-yellow-700 font-bold">5-7</div>
+                  <div>
+                    <p className="font-medium text-gray-900">Medium Risk</p>
+                    <p className="text-sm text-gray-600">Some concerns detected, monitoring recommended</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-700 font-bold">8-10</div>
+                  <div>
+                    <p className="font-medium text-gray-900">High Risk</p>
+                    <p className="text-sm text-gray-600">Strong churn indicators, immediate attention needed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
 
-            <section id="quick-start">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Quick Start Guide
-              </h2>
-              <ol className="space-y-4 text-gray-600 list-decimal list-inside">
-                <li>Sign up for a free trial account</li>
-                <li>Connect your Zendesk account or upload CSV tickets</li>
-                <li>Wait for AI analysis to complete (usually a few minutes)</li>
-                <li>View your dashboard for insights and churn predictions</li>
-                <li>Set up email alerts for high-risk customers</li>
-              </ol>
-            </section>
-
-            <section id="features">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Features Overview
-              </h2>
-              <ul className="space-y-2 text-gray-600">
-                <li>🎯 AI-powered sentiment analysis</li>
-                <li> Real-time churn risk scoring (0-10)</li>
-                <li> Frustration level detection</li>
-                <li> Automatic ticket categorization</li>
-                <li> Evidence-based insights</li>
-                <li> Email alerts for high-risk tickets</li>
-              </ul>
-            </section>
-
-            <section id="api">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                API Reference
-              </h2>
-              <p className="text-gray-600 mb-4">
-                See our{" "}
-                <Link href="/api-reference" className="text-blue-600 hover:underline">
-                  API Reference page
-                </Link>{" "}
-                for detailed endpoint documentation.
-              </p>
-            </section>
-
-            <section id="integrations">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Integrations
-              </h2>
-              <p className="text-gray-600 mb-4">
-                We currently support the following integrations:
-              </p>
-              <ul className="space-y-2 text-gray-600">
-                <li> Zendesk</li>
-                <li>📁 CSV File Upload</li>
-                <li> Email Alerts (via Resend)</li>
-              </ul>
-              <p className="text-gray-600 mt-4">
-                See our{" "}
-                <Link href="/integration-guide" className="text-blue-600 hover:underline">
-                  Integration Guide
-                </Link>{" "}
-                for setup instructions.
-              </p>
-            </section>
-
-            <section id="billing">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Billing & Plans
-              </h2>
-              <p className="text-gray-600 mb-4">
-                We offer a simple, transparent pricing model:
-              </p>
-              <ul className="space-y-2 text-gray-600">
-                <li>🆓 7-day free trial</li>
-                <li>💰 $249/month for up to 2,000 tickets</li>
-                <li> Volume discounts available for larger organizations</li>
-              </ul>
-            </section>
-          </div>
+          {/* Data Security */}
+          <section>
+            <Card>
+              <CardHeader>
+                <CardTitle>Data Security</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-gray-600">
+                  <li>• All data is encrypted in transit and at rest</li>
+                  <li>• We use industry-standard security practices</li>
+                  <li>• Your data is never shared with third parties</li>
+                  <li>• You can delete your data at any time</li>
+                  <li>• AI processing is done through secure APIs</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </section>
         </div>
       </div>
     </div>

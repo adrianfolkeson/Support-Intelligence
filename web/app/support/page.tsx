@@ -1,295 +1,134 @@
-"use client";
-
-import { useState } from "react";
-import Link from "next/link";
-import { Logo } from "@/components/ui/logo";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mail, MessageCircle, Clock } from "lucide-react";
 
 export default function SupportPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError("");
-
-    try {
-      const formData = new FormData(e.currentTarget);
-      const data = Object.fromEntries(formData);
-
-      // For now, just show success message
-      // In production, you would send this to your backend or email service
-      console.log("Support form submitted:", data);
-
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 5000);
-    } catch (err) {
-      setError("Failed to send message. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const faqs = [
+    {
+      q: "How does the free trial work?",
+      a: "You get 30 days of full access to all features. No credit card is required to start. After 30 days, you can subscribe to continue using the service.",
+    },
+    {
+      q: "What happens to my data during the trial?",
+      a: "Your data is securely stored and protected. If you choose not to subscribe, your data is deleted after 30 days.",
+    },
+    {
+      q: "Can I import tickets from multiple sources?",
+      a: "Currently, we support Zendesk integration and CSV uploads. You can use both methods to import tickets from different sources.",
+    },
+    {
+      q: "How accurate is the churn prediction?",
+      a: "Our AI model is trained on thousands of support interactions and achieves approximately 85% accuracy in identifying customers at risk of churning.",
+    },
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes, you can cancel your subscription at any time from your billing settings. Access continues until the end of your billing period.",
+    },
+    {
+      q: "Do you offer enterprise plans?",
+      a: "Yes, we offer custom enterprise plans for organizations with more than 2,000 tickets per month. Contact us for details.",
+    },
+    {
+      q: "Is my customer data secure?",
+      a: "Absolutely. All data is encrypted in transit and at rest. We use industry-standard security practices and never share your data with third parties.",
+    },
+    {
+      q: "How often are reports generated?",
+      a: "Weekly reports are generated every Monday morning. You can also view real-time data in your dashboard at any time.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <Logo size="md" />
-            </div>
-            <nav className="flex gap-4">
-              <Link
-                href="/dashboard-connected?org=71474f1d-e3c0-4b70-8874-d26cb5047cb7"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+    <div className="px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900">Help & Support</h1>
+          <p className="mt-4 text-lg text-gray-600">
+            Find answers to common questions or get in touch with our team.
+          </p>
+        </div>
+
+        {/* Contact Options */}
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          <Card>
+            <CardContent className="p-6">
+              <Mail className="h-8 w-8 text-blue-600" />
+              <h3 className="mt-4 text-lg font-semibold text-gray-900">Email Support</h3>
+              <p className="mt-2 text-gray-600">
+                Get help via email. We typically respond within 24 hours.
+              </p>
+              <a
+                href="mailto:support@supportintelligence.com"
+                className="mt-4 inline-block text-blue-600 hover:underline"
               >
-                Dashboard
-              </Link>
-              <Link
-                href="/pricing"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                support@supportintelligence.com
+              </a>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <MessageCircle className="h-8 w-8 text-blue-600" />
+              <h3 className="mt-4 text-lg font-semibold text-gray-900">Documentation</h3>
+              <p className="mt-2 text-gray-600">
+                Browse our documentation for detailed guides and API reference.
+              </p>
+              <a
+                href="/documentation"
+                className="mt-4 inline-block text-blue-600 hover:underline"
               >
-                Get Started
-              </Link>
-            </nav>
-          </div>
+                View Documentation
+              </a>
+            </CardContent>
+          </Card>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Support
-        </h1>
-
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* FAQ */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Frequently Asked Questions
-            </h2>
-
-            <div className="space-y-6">
+        {/* Response Time */}
+        <Card className="mt-8">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <Clock className="h-6 w-6 text-blue-600" />
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  How long does analysis take?
-                </h3>
-                <p className="text-gray-600">
-                  Most ticket batches are analyzed within 1-2 minutes. Large
-                  batches of 500+ tickets may take 5-10 minutes.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  What ticket formats do you support?
-                </h3>
-                <p className="text-gray-600">
-                  We support Zendesk, Freshdesk, Intercom, and generic CSV
-                  formats. Contact us for custom integrations.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  How accurate is the churn prediction?
-                </h3>
-                <p className="text-gray-600">
-                  Our AI achieves 85%+ accuracy based on historical data analysis.
-                  Predictions improve as the system learns from your specific customer patterns.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Can I export my data?
-                </h3>
-                <p className="text-gray-600">
-                  Yes, you can export all analyzed tickets and reports in CSV
-                  or JSON format from the dashboard.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  What happens after my trial ends?
-                </h3>
-                <p className="text-gray-600">
-                  You'll receive a reminder before your trial ends. If you
-                  don't subscribe, your data is preserved for 30 days so you
-                  can export it.
+                <p className="font-medium text-gray-900">Response Time</p>
+                <p className="text-sm text-gray-600">
+                  We typically respond to all inquiries within 24 hours on business days.
                 </p>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Contact */}
-          <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-sm p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Contact Us
-              </h2>
-
-              {submitted ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-                  <svg className="w-12 h-12 text-green-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 className="text-lg font-semibold text-green-900 mb-2">Message Sent!</h3>
-                  <p className="text-green-700">We'll get back to you within 24 hours.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Your name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="your@email.com"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="subject"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Subject
-                    </label>
-                    <select
-                      id="subject"
-                      name="subject"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    >
-                      <option value="">Select a topic</option>
-                      <option value="general">General Question</option>
-                      <option value="technical">Technical Issue</option>
-                      <option value="billing">Billing</option>
-                      <option value="enterprise">Enterprise Inquiry</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={4}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="How can we help you?"
-                      required
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
-                      {error}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {submitting ? "Sending..." : "Send Message"}
-                  </button>
-                </form>
-              )}
-
-              {/* Contact Info */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
-                <h3 className="font-semibold text-blue-900 mb-4">
-                  Other Ways to Reach Us
-                </h3>
-                <ul className="space-y-2 text-blue-800">
-                  <li>Email: support@support-intelligence.ai</li>
-                  <li>Response time: Within 24 hours</li>
-                </ul>
-              </div>
-            </div>
+        {/* FAQ */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{faq.q}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{faq.a}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
-        {/* Additional Resources */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Additional Resources
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <Link
-              href="/documentation"
-              className="block p-6 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
+        {/* Still Need Help */}
+        <Card className="mt-12 bg-blue-50 border-blue-200">
+          <CardContent className="p-6 text-center">
+            <h3 className="text-lg font-semibold text-gray-900">Still need help?</h3>
+            <p className="mt-2 text-gray-600">
+              Our support team is here to help. Reach out anytime.
+            </p>
+            <a
+              href="mailto:support@supportintelligence.com"
+              className="mt-4 inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2 text-white font-medium hover:bg-blue-700"
             >
-              <div className="text-3xl mb-4">📚</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Documentation
-              </h3>
-              <p className="text-gray-600">
-                Detailed guides and API reference
-              </p>
-            </Link>
-
-            <Link
-              href="/api-reference"
-              className="block p-6 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
-            >
-              <div className="text-3xl mb-4">🔧</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                API Reference
-              </h3>
-              <p className="text-gray-600">
-                Technical documentation for developers
-              </p>
-            </Link>
-
-            <Link
-              href="/integration-guide"
-              className="block p-6 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
-            >
-              <div className="text-3xl mb-4">🔗</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Integration Guide
-              </h3>
-              <p className="text-gray-600">
-                Step-by-step integration instructions
-              </p>
-            </Link>
-          </div>
-        </div>
+              Contact Support
+            </a>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

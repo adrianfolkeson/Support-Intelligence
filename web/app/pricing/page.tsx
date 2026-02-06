@@ -1,226 +1,142 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-
-// Pricing page with Stripe checkout
-export const dynamic = 'force-dynamic';
+import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function PricingPage() {
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
-    setLoading(true);
-
+    setIsLoading(true);
     try {
-      // Generate organization name from timestamp for uniqueness
       const organizationName = `Customer-${Date.now()}`;
-
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ organizationName }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to start checkout");
+      }
 
+      const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
-      } else {
-        throw new Error(data.error || 'Failed to create checkout session');
       }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Could not start payment. Please try again or contact support.');
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      alert(error.message || "Failed to start checkout. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  const features = [
+    "Up to 2,000 tickets/month",
+    "AI churn risk analysis",
+    "Zendesk integration",
+    "Weekly insight reports",
+    "Email alerts for high-risk",
+    "Priority support",
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      <nav className="border-b bg-white/80 backdrop-blur-sm fixed w-full z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <Link href="/" className="text-xl font-bold text-gray-900">
-              Support Intelligence
-            </Link>
-            <div className="flex gap-4 items-center">
-              <SignedIn>
-                <UserButton afterSignOutUrl="/pricing"/>
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                    Sign In
-                  </button>
-                </SignInButton>
-              </SignedOut>
-            </div>
-          </div>
+    <div className="px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
+            Simple, transparent pricing
+          </h1>
+          <p className="mt-4 text-lg text-gray-600">
+            Start your 30-day free trial. No credit card required.
+          </p>
         </div>
-      </nav>
 
-      <main className="pt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl font-bold text-gray-900 mb-6">
-              AI-powered churn prevention,
-              <span className="text-blue-600"> simplified</span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Predict customer churn before it happens. Automatic AI analysis of support tickets.
-              30 day free trial.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-white to-blue-50 border-2 border-blue-600 rounded-3xl p-10 shadow-2xl relative overflow-hidden">
-              {/* Background decoration */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-100 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
-              <div className="relative z-10">
-                <div className="text-center mb-10">
-                  <h3 className="text-3xl font-bold text-gray-900 mb-3">Professional</h3>
-                  <p className="text-gray-600">Complete AI analysis for support teams</p>
-
-                  <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
-                    <p className="text-sm font-semibold text-purple-700 mb-2">Limited time offer for first 10 customers</p>
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-2xl font-bold text-gray-400 line-through">$249</span>
-                      <span className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                        $149
-                      </span>
-                      <span className="text-gray-600">/month</span>
-                    </div>
-                    <p className="text-sm text-green-600 font-semibold mt-2">
-                      You save $1,200/year! Lock in this price forever as an early adopter.
-                    </p>
-                    <p className="text-xs text-gray-600 mt-2">
-                      After the first 10 customers, the price will be $249/month.
-                    </p>
-                  </div>
+        {/* Pricing Card */}
+        <div className="mt-16 flex justify-center">
+          <Card className="w-full max-w-lg">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900">Professional</h2>
+                <div className="mt-6 flex items-baseline justify-center">
+                  <span className="text-5xl font-bold text-gray-900">$149</span>
+                  <span className="ml-2 text-xl text-gray-500">/month</span>
                 </div>
-
-                <div className="mb-10">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6">Everything included:</h4>
-                  <ul className="space-y-4">
-                    {[
-                      { icon: '', text: 'AI analysis of all support tickets', highlight: false },
-                      { icon: '', text: 'Churn risk scoring (0-10) for each customer', highlight: false },
-                      { icon: '', text: 'Email alerts for high risk (≥8/10)', highlight: false },
-                      { icon: '', text: 'Weekly insight reports', highlight: true },
-                      { icon: '', text: 'Zendesk integration (automatic sync)', highlight: true },
-                      { icon: '', text: 'Export data to CSV', highlight: false },
-                      { icon: '', text: 'Priority support via email', highlight: true },
-                      { icon: '', text: '30 day free trial - no credit card required!', highlight: true },
-                    ].map((feature, index) => (
-                      <li key={index} className={`flex items-start gap-3 ${feature.highlight ? 'bg-blue-50 p-3 -mx-3 rounded-lg' : ''}`}>
-                        <span className="text-2xl">{feature.icon}</span>
-                        <div>
-                          <span className={`font-medium ${feature.highlight ? 'text-blue-700' : 'text-gray-700'}`}>
-                            {feature.text}
-                          </span>
-                          {feature.highlight && (
-                            <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                              POPULAR
-                            </span>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button
-                  onClick={handleSubscribe}
-                  disabled={loading}
-                  className="w-full py-5 text-center text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                >
-                  {loading ? 'Starting...' : 'Start 30 day free trial'}
-                </button>
-
-                <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>No credit card required</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0" />
-                    </svg>
-                    <span>Cancel anytime</span>
-                  </div>
-                </div>
-
-                <p className="mt-6 text-center text-sm text-gray-500">
-                  You keep the introductory price as long as you stay a customer
+                <p className="mt-2">
+                  <span className="text-lg text-gray-400 line-through">$249</span>
+                  <span className="ml-2 text-sm text-green-600 font-medium">Launch pricing</span>
                 </p>
               </div>
-            </div>
-          </div>
 
-          {/* Social Proof */}
-          <div className="mt-20 max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <h4 className="text-xl font-semibold text-center text-gray-900 mb-6">
-                What our early users say
-              </h4>
-              <div className="grid md:grid-cols-3 gap-6">
-                {[
-                  {
-                    quote: "We found a risk customer we would have otherwise missed. Great value!",
-                    author: "SaaS Founder",
-                    company: "Early Adopter"
-                  },
-                  {
-                    quote: "The weekly reports save us hours every week.",
-                    author: "Support Lead",
-                    company: "Beta Tester"
-                  },
-                  {
-                    quote: "So easy to get started. Integrated in 5 minutes.",
-                    author: "CTO",
-                    company: "Early Adopter"
-                  }
-                ].map((testimonial, index) => (
-                  <div key={index} className="bg-gray-50 p-6 rounded-lg">
-                    <p className="text-gray-700 mb-4 italic">"{testimonial.quote}"</p>
-                    <p className="text-sm font-semibold text-gray-900">{testimonial.author}</p>
-                    <p className="text-xs text-gray-500">{testimonial.company}</p>
-                  </div>
+              <ul className="mt-8 space-y-4">
+                {features.map((feature) => (
+                  <li key={feature} className="flex items-center">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100">
+                      <Check className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="ml-3 text-gray-700">{feature}</span>
+                  </li>
                 ))}
-              </div>
-              <p className="text-center text-sm text-gray-500 mt-6">
-                *Hypothetical quotes for illustrative purposes
+              </ul>
+
+              <button
+                onClick={handleSubscribe}
+                disabled={isLoading}
+                className="mt-8 w-full rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center">
+                    <Spinner size="sm" className="mr-2" />
+                    Processing...
+                  </span>
+                ) : (
+                  "Start 30-Day Free Trial"
+                )}
+              </button>
+
+              <p className="mt-4 text-center text-sm text-gray-500">
+                No credit card required to start
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* CTA Section */}
-        <div className="mt-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Be one of the first 10 customers
+        {/* FAQ */}
+        <div className="mt-24 max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 text-center">
+            Frequently Asked Questions
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join us in shaping the future of support analytics. Early adopter pricing applies as long as you stay a customer.
-          </p>
-          <button
-            onClick={() => window.location.href = '#pricing'}
-            className="inline-flex items-center px-8 py-4 text-lg font-semibold text-blue-600 bg-white rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
-          >
-            Get started now
-            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5-5m5 5H6" />
-            </svg>
-          </button>
+          <div className="mt-8 space-y-6">
+            {[
+              {
+                q: "What happens after the trial?",
+                a: "After 30 days, you'll be charged $149/month. You can cancel anytime before the trial ends with no charge.",
+              },
+              {
+                q: "Can I change plans later?",
+                a: "Yes, you can upgrade or downgrade your plan at any time from your settings.",
+              },
+              {
+                q: "What payment methods do you accept?",
+                a: "We accept all major credit cards through Stripe.",
+              },
+            ].map((faq) => (
+              <div key={faq.q} className="border-b border-gray-200 pb-6">
+                <h3 className="text-lg font-medium text-gray-900">{faq.q}</h3>
+                <p className="mt-2 text-gray-600">{faq.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

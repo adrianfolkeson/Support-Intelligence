@@ -6,7 +6,7 @@ export default function SignInPage() {
       <SignIn
         afterSignInUrl="/dashboard"
         signUpUrl="/sign-up"
-        redirectUrl="https://support-intelligence-39epmao9a-adrianfolkesons-projects.vercel.app"
+        redirectUrl="https://support-intelligence.vercel.app"
       />
     </div>
   );

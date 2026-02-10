@@ -155,7 +155,7 @@ router.get('/organizations/:id/subscription', async (req: Request, res: Response
 
 /**
  * GET /api/stripe/session/:sessionId/organization
- * Get organization ID from Stripe session
+ * Get organization ID from Stripe session and verify payment
  */
 router.get('/stripe/session/:sessionId/organization', async (req: Request, res: Response) => {
   try {
@@ -173,9 +173,27 @@ router.get('/stripe/session/:sessionId/organization', async (req: Request, res: 
       return res.status(404).json({ error: 'Organization not found in session' });
     }
 
-    res.json({ organization_id: organizationId });
+    // Verify payment status - must be paid for checkout to be valid
+    if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
+      return res.status(402).json({
+        error: 'Payment not completed',
+        paymentStatus: session.payment_status,
+        message: 'Please complete your payment to continue'
+      });
+    }
+
+    // Return organizationId with success status
+    res.json({
+      success: true,
+      organizationId: organizationId,
+      paymentStatus: session.payment_status,
+      subscriptionStatus: session.subscription
+    });
   } catch (error: any) {
     console.error('Get session error:', error);
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(404).json({ error: 'Invalid session ID' });
+    }
     res.status(500).json({ error: error.message || 'Failed to retrieve session' });
   }
 });

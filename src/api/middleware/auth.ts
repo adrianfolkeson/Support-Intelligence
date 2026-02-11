@@ -5,12 +5,13 @@ import { query } from '../../database/connection';
 const secretKey = process.env.CLERK_SECRET_KEY;
 
 /**
- * Middleware that verifies the Clerk session token and attaches user info to the request.
- * When CLERK_SECRET_KEY is not set (e.g., local development), requests pass through.
+ * Middleware that verifies Clerk session token and attaches user info to request.
+ * Uses the Clerk Backend SDK for proper token verification.
  */
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!secretKey) {
     // Clerk not configured — skip auth (development mode)
+    req.userId = 'dev-user';
     return next();
   }
 
@@ -22,18 +23,27 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   const token = authHeader.slice(7);
 
   try {
+    // Verify token with Clerk Backend SDK
     const payload = await verifyToken(token, { secretKey });
+
+    if (!payload || !payload.sub) {
+      return res.status(401).json({ error: 'Invalid or expired session token' });
+    }
+
+    // Attach user info to request
     (req as any).userId = payload.sub;
+    (req as any).clerkUserId = payload.sub; // Alternative name
+
     next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid or expired session token' });
+  } catch (error: any) {
+    console.error('Clerk auth error:', error);
+    return res.status(401).json({ error: 'Invalid or expired session token', details: error.message });
   }
 }
 
 /**
- * Middleware that checks the authenticated user has access to the requested organization.
+ * Middleware that checks authenticated user has access to the requested organization.
  * Must be used after requireAuth and on routes with an :id param (organization ID).
- * When CLERK_SECRET_KEY is not set, requests pass through.
  */
 export async function requireOrgAccess(req: Request, res: Response, next: NextFunction) {
   if (!secretKey) {
@@ -61,7 +71,7 @@ export async function requireOrgAccess(req: Request, res: Response, next: NextFu
     }
 
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Org access check error:', error);
     return res.status(500).json({ error: 'Failed to verify organization access' });
   }

@@ -14,17 +14,9 @@ const router = Router();
  * POST /api/organizations
  * Create a new organization
  */
-router.post('/organizations', async (req: Request, res: Response) => {
+router.post('/organizations', requireAuth, async (req: Request, res: Response) => {
   try {
     const { name, userId } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: 'Organization name is required' });
-    }
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
 
     // Generate unique organization ID
     const orgId = uuidv4();
@@ -93,7 +85,7 @@ router.post('/organizations/:id/create-checkout', async (req: Request, res: Resp
  * POST /api/organizations/:id/create-portal
  * Create a Stripe billing portal session
  */
-router.post('/organizations/:id/create-portal', async (req: Request, res: Response) => {
+router.post('/organizations/:id/create-portal', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const orgId = Array.isArray(id) ? id[0] : id;

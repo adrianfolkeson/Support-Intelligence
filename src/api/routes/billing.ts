@@ -7,6 +7,7 @@ import {
   handleWebhookEvent,
   hasActiveSubscription,
 } from '../../services/stripe-service';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 

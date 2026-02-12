@@ -159,35 +159,7 @@ app.get('/api/organizations', async (req, res, next) => {
   }
 });
 
-// Create organization
-app.post('/api/organizations', async (req, res, next) => {
-  try {
-    const { name, external_api_key, external_api_url, userId } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: 'Organization name is required' });
-    }
-
-    const result = await query(
-      'INSERT INTO organizations (name, external_api_key, external_api_url) VALUES ($1, $2, $3) RETURNING *',
-      [name, external_api_key, external_api_url]
-    );
-
-    const org = result.rows[0];
-
-    // Link user to the organization if userId was provided
-    if (userId) {
-      await query(
-        'INSERT INTO user_organizations (user_id, organization_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-        [userId, org.id, 'owner']
-      );
-    }
-
-    res.status(201).json({ organization: org });
-  } catch (error) {
-    next(error);
-  }
-});
+// NOTE: POST /api/organizations is handled by billing routes with authentication
 
 // Get organization by ID
 app.get('/api/organizations/:id', validateOrgId, async (req, res, next) => {

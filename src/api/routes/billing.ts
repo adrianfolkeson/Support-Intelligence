@@ -51,7 +51,7 @@ router.post('/organizations', requireAuth, async (req: Request, res: Response) =
  * POST /api/organizations/:id/create-checkout
  * Create a Stripe checkout session
  */
-router.post('/organizations/:id/create-checkout', async (req: Request, res: Response) => {
+router.post('/organizations/:id/create-checkout', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const orgId = Array.isArray(id) ? id[0] : id;
@@ -109,7 +109,7 @@ router.post('/organizations/:id/create-portal', requireAuth, async (req: Request
  * GET /api/organizations/:id/subscription
  * Get subscription status
  */
-router.get('/organizations/:id/subscription', async (req: Request, res: Response) => {
+router.get('/organizations/:id/subscription', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const orgId = Array.isArray(id) ? id[0] : id;
@@ -150,7 +150,7 @@ router.get('/organizations/:id/subscription', async (req: Request, res: Response
  * GET /api/stripe/session/:sessionId/organization
  * Get organization ID from Stripe session and verify payment
  */
-router.get('/stripe/session/:sessionId/organization', async (req: Request, res: Response) => {
+router.get('/stripe/session/:sessionId/organization', requireAuth, async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
     const Stripe = require('stripe');

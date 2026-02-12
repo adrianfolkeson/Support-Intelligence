@@ -1,6 +1,0 @@
-{
-  "buildCommand": "tsc",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": null
-}

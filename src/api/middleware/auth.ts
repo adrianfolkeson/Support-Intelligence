@@ -1,18 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '@clerk/backend';
 import { query } from '../../database/connection';
 
 const secretKey = process.env.CLERK_SECRET_KEY;
 
 /**
  * Middleware that verifies Clerk session token and attaches user info to request.
- * Uses the Clerk Backend SDK for proper token verification.
+ * Uses proper Clerk Backend SDK pattern for Next.js App Router.
  */
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!secretKey) {
     // Clerk not configured — skip auth (development mode)
-    req.userId = 'dev-user';
-    return next();
+    return res.status(401).json({ error: 'Unauthorized - CLERK_SECRET_KEY not configured' });
   }
 
   const authHeader = req.headers.authorization;
@@ -24,15 +22,15 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
   try {
     // Verify token with Clerk Backend SDK
+    const { verifyToken } = await import('@clerk/backend');
     const payload = await verifyToken(token, { secretKey });
 
     if (!payload || !payload.sub) {
       return res.status(401).json({ error: 'Invalid or expired session token' });
     }
 
-    // Attach user info to request
+    // Attach user info to request using proper Express pattern
     (req as any).userId = payload.sub;
-    (req as any).clerkUserId = payload.sub; // Alternative name
 
     next();
   } catch (error: any) {
@@ -42,7 +40,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 }
 
 /**
- * Middleware that checks authenticated user has access to the requested organization.
+ * Middleware that checks authenticated user has access to requested organization.
  * Must be used after requireAuth and on routes with an :id param (organization ID).
  */
 export async function requireOrgAccess(req: Request, res: Response, next: NextFunction) {

@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2023-10-16",
+});
+
+const PRICE_ID = process.env.STRIPE_PRICE_ID as string;
 
 export async function POST(request: Request) {
   try {
-    const { userId, getToken } = await auth();
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { organizationName } = body;
 
@@ -14,55 +26,50 @@ export async function POST(request: Request) {
       );
     }
 
-    const token = await getToken();
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!PRICE_ID) {
+      return NextResponse.json(
+        { error: "Stripe price not configured" },
+        { status: 500 }
+      );
+    }
 
-    // Create organization via billing routes
-    const orgResponse = await fetch(`${backendUrl}/api/organizations`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+    const customer = await stripe.customers.create({
+      metadata: {
+        organization_id: userId,
+        organization_name: organizationName,
+        user_id: userId,
       },
-      body: JSON.stringify({ name: organizationName, userId }),
     });
 
-    if (!orgResponse.ok) {
-      const error = await orgResponse.json();
-      throw new Error(error.error || "Failed to create organization");
-    }
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    const orgData = await orgResponse.json();
-    const organizationId = orgData.organization.id;
-
-    // Create Stripe checkout session
-    const checkoutResponse = await fetch(
-      `${backendUrl}/api/organizations/${organizationId}/create-checkout`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "X-Frontend-Url": process.env.NEXT_PUBLIC_URL || "",
+    const session = await stripe.checkout.sessions.create({
+      customer: customer.id,
+      mode: "subscription",
+      line_items: [
+        {
+          price: PRICE_ID,
+          quantity: 1,
         },
-      }
-    );
-
-    if (!checkoutResponse.ok) {
-      const error = await checkoutResponse.json();
-      throw new Error(error.error || "Failed to create checkout session");
-    }
-
-    const checkoutData = await checkoutResponse.json();
-
-    return NextResponse.json({
-      url: checkoutData.checkoutUrl,
-      organizationId,
+      ],
+      success_url: `${appUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/pricing?canceled=true`,
+      metadata: {
+        organization_id: userId,
+      },
+      subscription_data: {
+        metadata: {
+          organization_id: userId,
+        },
+        trial_period_days: 30,
+      },
     });
+
+    return NextResponse.json({ url: session.url });
   } catch (error: any) {
     console.error("Checkout error:", error);
     return NextResponse.json(
-      { error: "Failed to start checkout", details: error.message },
+      { error: "Failed to start checkout" },
       { status: 500 }
     );
   }

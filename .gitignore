@@ -1,37 +1,30 @@
-# Dependencies
-node_modules/
-/package-lock.json
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-# Build output
-dist/
-build/
-*.tsbuildinfo
+# testing
+/coverage
 
-# Environment variables (NEVER commit these!)
-.env
-.env.local
-.env.production
+# next.js
+/.next/
+/out/
 
-# Logs
-logs/
-*.log
-npm-debug.log*
+# production
+/build
 
-# Database
-*.db
-*.sqlite
-postgres-data/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+# misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# Execution logs (if you want to keep these private)
-execution_logs/
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files (can opt-in for committing)
+.env*.local
+.env
+
+# vercel
+.vercel

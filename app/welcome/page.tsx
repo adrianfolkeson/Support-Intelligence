@@ -7,10 +7,12 @@ import { CheckCircle, ArrowRight, Link as LinkIcon, Upload, BarChart3, AlertCirc
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchAPI } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 export default function WelcomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { getToken } = useAuth();
   const sessionId = searchParams.get("session_id");
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,30 +25,32 @@ export default function WelcomePage() {
     }
 
     // Verify session and get organization ID
-    fetchAPI(`/api/stripe/session/${sessionId}/organization`)
-      .then((data) => {
-        if (data.success && data.organizationId) {
-          setOrgId(data.organizationId);
-          // Store orgId in cookie for future use
-          document.cookie = `orgId=${data.organizationId}; path=/; max-age=2592000; SameSite=Lax`;
-        } else {
-          setError("Failed to verify checkout session");
-        }
-      })
-      .catch((err: Error) => {
-        console.error("Failed to verify session:", err);
-        if (err.message.includes("Payment not completed")) {
-          setError("Payment not completed. Please complete your payment to continue.");
-        } else if (err.message.includes("Invalid session")) {
-          setError("Invalid checkout session. Please try again.");
-        } else {
-          setError("Failed to verify checkout. Please contact support.");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [sessionId, router]);
+    getToken().then((token) => {
+      fetchAPI(`/api/stripe/session/${sessionId}/organization`, {}, token)
+        .then((data) => {
+          if (data.success && data.organizationId) {
+            setOrgId(data.organizationId);
+            // Store orgId in cookie for future use
+            document.cookie = `orgId=${data.organizationId}; path=/; max-age=2592000; SameSite=Lax`;
+          } else {
+            setError("Failed to verify checkout session");
+          }
+        })
+        .catch((err: Error) => {
+          console.error("Failed to verify session:", err);
+          if (err.message.includes("Payment not completed")) {
+            setError("Payment not completed. Please complete your payment to continue.");
+          } else if (err.message.includes("Invalid session")) {
+            setError("Invalid checkout session. Please try again.");
+          } else {
+            setError("Failed to verify checkout. Please contact support.");
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    });
+  }, [sessionId, router, getToken]);
 
   if (loading) {
     return (

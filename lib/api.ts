@@ -1,12 +1,10 @@
-// Helper for making authenticated API calls to the backend
+// Helper for making authenticated API calls
 
 export async function fetchAPI(
   endpoint: string,
   options: RequestInit = {},
   token?: string | null
 ) {
-  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
@@ -16,7 +14,7 @@ export async function fetchAPI(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await fetch(endpoint, {
     ...options,
     headers,
   });

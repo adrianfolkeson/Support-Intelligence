@@ -1,37 +1,76 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
+import { headers } from "next/headers";
+import { rateLimit } from "@/lib/rate-limit";
+import { checkoutSchema, formatZodError } from "@/lib/validations";
+import { handleAPIError, logRequest, logSecurityEvent, requireEnv } from "@/lib/error-handler";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'), {
   apiVersion: "2023-10-16",
 });
 
-const PRICE_ID = process.env.STRIPE_PRICE_ID as string;
+const PRICE_ID = requireEnv('STRIPE_PRICE_ID');
 
 export async function POST(request: Request) {
+  const start = Date.now();
+
   try {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      logSecurityEvent({
+        event: 'unauthorized_access',
+        details: { reason: 'No user ID found', path: '/api/checkout' }
+      });
+
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const body = await request.json();
-    const { organizationName } = body;
+    // Rate limiting
+    const headersList = headers();
+    const ip = headersList.get('x-forwarded-for') || 'unknown';
+    const { success, resetTime } = await rateLimit.auth.limit(userId);
 
-    if (!organizationName) {
+    if (!success) {
+      logSecurityEvent({
+        event: 'rate_limit_exceeded',
+        userId,
+        ip,
+        details: { endpoint: '/api/checkout', resetTime }
+      });
+
       return NextResponse.json(
-        { error: "Organization name is required" },
+        {
+          error: 'Too many checkout attempts. Please try again later.',
+          retryAfter: resetTime ? Math.ceil((resetTime - Date.now()) / 1000) : 60
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': resetTime
+              ? Math.ceil((resetTime - Date.now()) / 1000).toString()
+              : '60',
+          },
+        }
+      );
+    }
+
+    // Parse and validate request body
+    const body = await request.json();
+    const validationResult = checkoutSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        formatZodError(validationResult.error),
         { status: 400 }
       );
     }
 
-    if (!PRICE_ID) {
-      return NextResponse.json(
-        { error: "Stripe price not configured" },
-        { status: 500 }
-      );
-    }
+    const { organizationName } = validationResult.data;
 
     const customer = await stripe.customers.create({
       metadata: {
@@ -65,12 +104,21 @@ export async function POST(request: Request) {
       },
     });
 
+    logRequest({
+      method: 'POST',
+      path: '/api/checkout',
+      status: 200,
+      duration: Date.now() - start,
+      userId,
+      ip,
+    });
+
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
-    console.error("Checkout error:", error);
-    return NextResponse.json(
-      { error: "Failed to start checkout" },
-      { status: 500 }
-    );
+    return handleAPIError(error, {
+      method: 'POST',
+      path: '/api/checkout',
+      duration: Date.now() - start,
+    });
   }
 }

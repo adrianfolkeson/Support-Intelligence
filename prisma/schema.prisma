@@ -1,0 +1,55 @@
+// Support-Intel Database Schema
+// Add this to your existing schema.prisma or merge with existing models
+
+model ChurnPrediction {
+  id                  String   @id @default(uuid())
+  customerId          String
+  organizationId      String
+
+  // Prediction results
+  churnRisk           Int
+  riskLevel           String
+  confidence          Int
+  predictedChurnDate  DateTime?
+
+  // Analysis details (stored as JSON)
+  keyFactors          Json     @default("[]")
+  recommendedActions  Json     @default("[]")
+  customerMetrics     Json     @default("{}")
+
+  // Metadata
+  predictionSource    String   @default("aurora_api")
+  batchId             String?
+
+  // Timestamps
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  customer            Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  organization        Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([organizationId])
+  @@index([riskLevel])
+  @@index([churnRisk])
+  @@index([createdAt(sort: Desc)])
+  @@index([customerId], where: { churnRisk: { gte: 50 } })
+}
+
+// Example of related models (adjust based on your actual schema)
+model Customer {
+  id              String    @id
+  email           String
+  organizationId  String
+  predictions     ChurnPrediction[]
+  // ... other fields
+}
+
+model Organization {
+  id              String    @id
+  name            String
+  predictions     ChurnPrediction[]
+  customers       Customer[]
+  // ... other fields
+}

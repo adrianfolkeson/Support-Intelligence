@@ -23,9 +23,9 @@ export const sanitizeString = (str: string): string => {
  */
 export const emailSchema = z
   .string()
+  .max(255, 'Email too long')
   .email('Invalid email address')
-  .transform(sanitizeString)
-  .max(255, 'Email too long');
+  .transform(sanitizeString);
 
 /**
  * Validate URL

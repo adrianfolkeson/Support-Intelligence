@@ -114,7 +114,7 @@ const formatErrorResponse = (
     return {
       error: 'Validation failed',
       code: 'VALIDATION_ERROR',
-      details: error.errors.map(err => ({
+      details: error.issues.map(err => ({
         field: err.path.join('.'),
         message: err.message,
       })),
@@ -170,7 +170,7 @@ export const handleAPIError = (
       type: 'validation_error',
       method: context?.method,
       path: context?.path,
-      errors: error.errors,
+      errors: error.issues,
     });
   } else {
     logError({

@@ -1,118 +1,90 @@
-/**
- * Rate Limiter - In-memory implementation
- * For production, consider using Upstash Redis or similar
- */
+import Redis from 'ioredis';
+import { RATE_LIMITS } from './constants';
 
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const redis = new Redis(redisUrl);
+
+// Rate limit by IP + organization for multi-tenant
+export async function rateLimit({
+  identifier,  // combination of orgId:ip
+  limit = 100,
+  window = 60
+}: {
+  identifier: string;
+  limit?: number;
+  window?: number;
+}) {
+  const key = `ratelimit:${identifier}`;
+  const current = await redis.incr(key);
+
+  if (current === 1) {
+    await redis.expire(key, window);
+  }
+
+  const remaining = Math.max(0, limit - current);
+  const resetTime = await redis.ttl(key);
+
+  return {
+    success: current <= limit,
+    remaining,
+    reset: resetTime
+  };
 }
 
-export class RateLimiter {
-  private requests: Map<string, RateLimitEntry> = new Map();
-  private maxRequests: number;
-  private windowMs: number;
+// Fallback for local dev without Redis
+const inMemoryStore = new Map<string, { count: number; reset: number }>();
 
-  constructor(maxRequests: number = 10, windowMs: number = 60000) {
-    this.maxRequests = maxRequests;
-    this.windowMs = windowMs;
+export function rateLimitFallback(identifier: string, limit = 100, windowSec = 60) {
+  const now = Date.now();
+  const key = `ratelimit:${identifier}`;
+  const current = inMemoryStore.get(key);
 
-    // Clean up expired entries every minute
-    setInterval(() => this.cleanup(), 60000);
+  if (!current || now > current.reset) {
+    inMemoryStore.set(key, { count: 1, reset: now + windowSec * 1000 });
+    return { success: true, remaining: limit - 1, reset: windowSec };
   }
 
-  /**
-   * Check if a request should be rate limited
-   * @param identifier - Unique identifier (IP address, user ID, etc.)
-   * @returns Object with success flag and remaining requests
-   */
-  limit(identifier: string): { success: boolean; remaining: number; resetTime?: number } {
-    const now = Date.now();
-
-    // Get or create entry for this identifier
-    let entry = this.requests.get(identifier);
-
-    // If no entry exists or window has expired, create new entry
-    if (!entry || now > entry.resetTime) {
-      entry = {
-        count: 0,
-        resetTime: now + this.windowMs,
-      };
-      this.requests.set(identifier, entry);
-    }
-
-    // Increment counter
-    entry.count++;
-
-    // Check if limit exceeded
-    if (entry.count > this.maxRequests) {
-      return {
-        success: false,
-        remaining: 0,
-        resetTime: entry.resetTime,
-      };
-    }
-
-    return {
-      success: true,
-      remaining: this.maxRequests - entry.count,
-      resetTime: entry.resetTime,
-    };
+  if (current.count >= limit) {
+    return { success: false, remaining: 0, reset: Math.ceil((current.reset - now) / 1000) };
   }
 
-  /**
-   * Reset rate limit for a specific identifier
-   */
-  reset(identifier: string): void {
-    this.requests.delete(identifier);
-  }
-
-  /**
-   * Clean up expired entries
-   */
-  private cleanup(): void {
-    const now = Date.now();
-    for (const [key, entry] of this.requests.entries()) {
-      if (now > entry.resetTime) {
-        this.requests.delete(key);
-      }
-    }
-  }
-
-  /**
-   * Get current statistics
-   */
-  getStats(): { totalEntries: number; activeEntries: number } {
-    const now = Date.now();
-    let activeEntries = 0;
-
-    for (const entry of this.requests.values()) {
-      if (now <= entry.resetTime) {
-        activeEntries++;
-      }
-    }
-
-    return {
-      totalEntries: this.requests.size,
-      activeEntries,
-    };
-  }
+  current.count++;
+  return { success: true, remaining: limit - current.count, reset: Math.ceil((current.reset - now) / 1000) };
 }
 
-// Pre-configured limiters for different use cases
-export const rateLimit = {
-  // API endpoints: 10 requests per minute
-  api: new RateLimiter(10, 60000),
+// Per-organization rate limiting
+export async function rateLimitByOrg({
+  orgId,
+  limit = RATE_LIMITS.API.requests,
+  windowSec = 60
+}: {
+  orgId: string;
+  limit?: number;
+  windowSec?: number;
+}) {
+  // Use organization-specific prefix
+  return rateLimit({
+    identifier: `org:${orgId}`,
+    limit,
+    window: windowSec
+  });
+}
 
-  // Authentication endpoints: 5 requests per minute (stricter)
-  auth: new RateLimiter(5, 60000),
-
-  // Public endpoints: 20 requests per minute (more lenient)
-  public: new RateLimiter(20, 60000),
-
-  // Webhook endpoints: 100 requests per minute (very lenient)
-  webhook: new RateLimiter(100, 60000),
-};
-
-// Default rate limiter
-export const defaultRateLimiter = rateLimit.api;
+// Combined IP + Org rate limiting (stricter)
+export async function rateLimitOrgIP({
+  orgId,
+  ip,
+  limit = RATE_LIMITS.PUBLIC.requests,
+  windowSec = 60
+}: {
+  orgId: string;
+  ip: string;
+  limit?: number;
+  windowSec?: number;
+}) {
+  return rateLimit({
+    identifier: `org:${orgId}:ip:${ip}`,
+    limit,
+    window: windowSec
+  });
+}

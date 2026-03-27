@@ -61,6 +61,28 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Resources */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Resources</h3>
+            <ul className="mt-4 space-y-3">
+              <li>
+                <Link href="/blog" className="text-sm text-gray-600 hover:text-blue-600">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/churn-calculator" className="text-sm text-gray-600 hover:text-blue-600">
+                  Churn Calculator
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare" className="text-sm text-gray-600 hover:text-blue-600">
+                  Compare
+                </Link>
+              </li>
+            </ul>
+          </div>
+
           {/* Legal */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900">Legal</h3>

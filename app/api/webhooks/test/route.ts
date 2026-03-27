@@ -1,0 +1,51 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { url } = await req.json();
+
+    if (!url) {
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    }
+
+    // Test webhook by sending a ping
+    const testPayload = {
+      event: "test",
+      timestamp: new Date().toISOString(),
+      data: {
+        message: "Webhook test successful",
+      },
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "Support-Intel-Webhook/1.0",
+      },
+      body: JSON.stringify(testPayload),
+    });
+
+    if (response.ok) {
+      return NextResponse.json({ success: true });
+    } else {
+      return NextResponse.json(
+        { error: `Webhook returned status ${response.status}` },
+        { status: 400 }
+      );
+    }
+  } catch (error: any) {
+    console.error("Webhook test error:", error);
+    return NextResponse.json(
+      { error: error.message || "Webhook test failed" },
+      { status: 500 }
+    );
+  }
+}

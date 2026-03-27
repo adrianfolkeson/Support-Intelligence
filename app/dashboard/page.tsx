@@ -10,8 +10,13 @@ import { StatsCard } from "@/components/stats-card";
 import { RiskBadge } from "@/components/risk-badge";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchAPI } from "@/lib/api";
 import { ToastProvider, useToast } from "@/components/ui/toast";
+import { ChurnTrendChart } from "@/components/dashboard/charts/churn-trend-chart";
+import { RiskDistributionChart } from "@/components/dashboard/charts/risk-distribution-chart";
+import { SentimentChart } from "@/components/dashboard/charts/sentiment-chart";
+import { CategoryBreakdownChart } from "@/components/dashboard/charts/category-breakdown-chart";
 
 function DashboardContent() {
   const router = useRouter();
@@ -25,6 +30,8 @@ function DashboardContent() {
   // Dashboard data
   const [stats, setStats] = useState<any>(null);
   const [tickets, setTickets] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any>(null);
+  const [loadingCharts, setLoadingCharts] = useState(true);
 
   useEffect(() => {
     // Get orgId from cookie
@@ -58,6 +65,24 @@ function DashboardContent() {
       // Fetch recent tickets
       const ticketsData = await fetchAPI(`/api/organizations/${id}/tickets?limit=10`, {}, token);
       setTickets(ticketsData.tickets || ticketsData || []);
+
+      // Fetch chart data
+      try {
+        const chartsResponse = await fetch(`/api/dashboard/charts?orgId=${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (chartsResponse.ok) {
+          const chartsJson = await chartsResponse.json();
+          setChartData(chartsJson);
+        }
+      } catch (chartError) {
+        console.error("Failed to fetch chart data:", chartError);
+        // Don't show toast for chart errors, just log it
+      } finally {
+        setLoadingCharts(false);
+      }
     } catch (error: any) {
       console.error("Failed to fetch dashboard data:", error);
       showToast(error.message || "Failed to load dashboard", "error");
@@ -274,6 +299,63 @@ function DashboardContent() {
             value={`${(stats.averageRiskScore || 0).toFixed(1)}/10`}
           />
         </div>
+
+        {/* Charts Section */}
+        {chartData && !loadingCharts && (
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            {/* Churn Trend Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Churn Risk Trend (30 Days)</CardTitle>
+                <CardDescription>
+                  Average risk score and high-risk ticket count over time
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChurnTrendChart data={chartData.churnTrend} />
+              </CardContent>
+            </Card>
+
+            {/* Risk Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Risk Distribution</CardTitle>
+                <CardDescription>
+                  Current breakdown of ticket risk levels
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RiskDistributionChart data={chartData.riskDistribution} />
+              </CardContent>
+            </Card>
+
+            {/* Sentiment Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Sentiment Analysis</CardTitle>
+                <CardDescription>
+                  Weekly sentiment breakdown of support tickets
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SentimentChart data={chartData.sentiment} />
+              </CardContent>
+            </Card>
+
+            {/* Category Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Tickets by Category</CardTitle>
+                <CardDescription>
+                  Issue categories with trend indicators
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CategoryBreakdownChart data={chartData.categories} />
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Recent Tickets */}
         <div className="mt-8">

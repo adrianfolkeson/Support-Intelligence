@@ -6,9 +6,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { checkoutSchema, formatZodError } from "@/lib/validations";
 import { handleAPIError, logRequest, logSecurityEvent, requireEnv } from "@/lib/error-handler";
 
-const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'), {
-  apiVersion: "2023-10-16",
-});
+const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'));
 
 const PRICE_ID = requireEnv('STRIPE_PRICE_ID');
 
@@ -31,9 +29,13 @@ export async function POST(request: Request) {
     }
 
     // Rate limiting
-    const headersList = headers();
+    const headersList = await headers();
     const ip = headersList.get('x-forwarded-for') || 'unknown';
-    const { success, resetTime } = await rateLimit.auth.limit(userId);
+    const { success, reset: resetTime } = await rateLimit({
+      identifier: `checkout:${userId}`,
+      limit: 3, // 3 checkout attempts per hour
+      window: 3600
+    });
 
     if (!success) {
       logSecurityEvent({

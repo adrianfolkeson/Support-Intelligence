@@ -56,9 +56,9 @@ export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
               border: "1px solid #e5e7eb",
               borderRadius: "8px",
             }}
-            formatter={(value: number, name: string, props: any) => [
-              `${value} tickets ${props.payload.trend === "up" ? "↑" : props.payload.trend === "down" ? "↓" : "→"}`,
-              name,
+            formatter={(value: any, name: any, props: any) => [
+              `${Number(value || 0)} tickets ${props.payload.trend === "up" ? "↑" : props.payload.trend === "down" ? "↓" : "→"}`,
+              name || "",
             ]}
           />
           <Bar dataKey="count" name="Tickets" radius={[8, 8, 0, 0]}>

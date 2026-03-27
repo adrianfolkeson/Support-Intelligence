@@ -85,16 +85,12 @@ export const checkoutSchema = z.object({
 /**
  * Ticket priority validation
  */
-export const ticketPrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'], {
-  errorMap: () => ({ message: 'Invalid priority level' }),
-});
+export const ticketPrioritySchema = z.enum(['low', 'medium', 'high', 'urgent']);
 
 /**
  * Ticket status validation
  */
-export const ticketStatusSchema = z.enum(['open', 'in_progress', 'resolved', 'closed'], {
-  errorMap: () => ({ message: 'Invalid status' }),
-});
+export const ticketStatusSchema = z.enum(['open', 'in_progress', 'resolved', 'closed']);
 
 /**
  * Create ticket schema
@@ -234,7 +230,7 @@ export const formatZodError = (error: z.ZodError): {
 } => {
   return {
     error: 'Validation failed',
-    details: error.errors.map(err => ({
+    details: error.issues.map(err => ({
       field: err.path.join('.'),
       message: err.message,
     })),

@@ -24,7 +24,7 @@ const incidents = [
   },
 ];
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export default function StatusPage() {
   const getStatusIcon = (status: string) => {

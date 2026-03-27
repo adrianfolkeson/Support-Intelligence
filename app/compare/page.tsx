@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, X, TrendingDown, Clock, Zap, Shield, BarChart3 } from "lucide-react";
+import { ArrowRight, ArrowDown, CheckCircle2, X, TrendingDown, Clock, Zap, Shield, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Navbar } from "@/components/navbar";

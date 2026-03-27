@@ -41,10 +41,11 @@ async function getChurnRiskData(organizationId: string) {
 export default async function ChurnRiskDashboard({
   searchParams,
 }: {
-  searchParams: { organizationId?: string };
+  searchParams: Promise<{ organizationId?: string }>;
 }) {
+  const params = await searchParams;
   const organizationId =
-    searchParams.organizationId || "default_organization";
+    params.organizationId || "default_organization";
 
   const data = await getChurnRiskData(organizationId);
   const { stats, highRiskCustomers, summary } = data;

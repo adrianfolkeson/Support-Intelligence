@@ -1,6 +1,256 @@
-// Support-Intel Database Schema
-// Add this to your existing schema.prisma or merge with existing models
+// Support-Intel Complete Database Schema
 
+generator = client {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ORGANIZATION
+// ============================================
+model Organization {
+  id                String   @id @default(uuid())
+  clerkUserId        String   // Owner from Clerk
+  name              String
+  slug              String?  @unique
+
+  // Billing
+  stripeCustomerId  String?
+  stripeSubscriptionId String?
+  subscriptionStatus String? @default("trial") // trial, active, past_due, canceled, incomplete
+  trialEndsAt       DateTime?
+
+  // Integrations
+  integrations      Json?    @default("{}") // { zendesk: {...}, intercom: {...}, helpscout: {...} }
+
+  // Settings
+  settings          Json?    @default("{}") // { notifications: {...}, riskThreshold: 7, ... }
+
+  // Metadata
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  tickets           Ticket[]
+  ticketAnalysis    TicketAnalysis[]
+  reports           Report[]
+  webhooks          Webhook[]
+  users             OrganizationUser[]
+
+  @@index([clerkUserId])
+  @@index([slug])
+  @@index([subscriptionStatus])
+}
+
+// ============================================
+// USERS (Clerk Integration)
+// ============================================
+model User {
+  id                String              @id @default(uuid())
+  clerkUserId       String              @unique  // From Clerk
+
+  // Relations
+  organizations     OrganizationUser[]
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([clerkUserId])
+}
+
+model OrganizationUser {
+  id                String       @id @default(uuid())
+  userId            String
+  organizationId    String
+  role              String       @default("member") // owner, admin, member
+
+  // Relations
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime     @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+// ============================================
+// TICKETS
+// ============================================
+model Ticket {
+  id                String   @id @default(uuid())
+  organizationId    String
+
+  // External IDs (for deduplication)
+  externalId        String?  // From Zendesk/Intercom/etc
+  externalSource    String?  // zendesk, intercom, helpscout, manual
+
+  // Ticket Data
+  customerEmail     String
+  customerName      String?
+  subject           String
+  description       String   @db.Text
+  status            String   @default("open") // open, in_progress, resolved, closed
+  priority          String   @default("medium") // low, medium, high, urgent
+  category          String?
+
+  // Metadata
+  externalUrl       String?  // Link to original ticket
+  externalCreatedAt DateTime?
+  closedAt          DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  analysis          TicketAnalysis?
+
+  @@unique([organizationId, externalId])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([customerEmail])
+}
+
+// ============================================
+// TICKET ANALYSIS (AI Results)
+// ============================================
+model TicketAnalysis {
+  id                String   @id @default(uuid())
+  ticketId          String   @unique
+  organizationId    String
+
+  // AI Analysis Results
+  churnRisk         Int      @default(0) // 0-10
+  sentiment         String   @default("neutral") // positive, neutral, negative
+  frustration      Int      @default(0) // 0-10
+
+  // Extracted Insights
+  category          String?
+  keyFactors        Json?    @default("[]")
+  recommendedActions Json?    @default("[]")
+
+  // Analysis Metadata
+  analysisModel     String   @default("aurora")
+  analyzedAt        DateTime @default(now())
+
+  createdAt         DateTime @default(now())
+
+  // Relations
+  ticket            Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([organizationId])
+  @@index([organizationId, churnRisk])
+  @@index([churnRisk])
+}
+
+// ============================================
+// REPORTS
+// ============================================
+model Report {
+  id                String   @id @default(uuid())
+  organizationId    String
+
+  // Report Details
+  title             String
+  type              String   // weekly, monthly, custom
+  startDate         DateTime
+  endDate           DateTime
+
+  // Report Data
+  totalTickets      Int
+  avgRiskScore      Float
+  highRiskCount     Int
+  sentimentBreakdown Json? // { positive: X, neutral: Y, negative: Z }
+  categoryBreakdown Json? // { category: count, ... }
+  topIssues         Json?    @default("[]")
+  featureRequests   Json?    @default("[]")
+  recommendedActions Json?    @default("[]")
+
+  createdAt         DateTime @default(now())
+
+  // Relations
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@index([organizationId, startDate(sort: Desc)])
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+model Webhook {
+  id                String   @id @default(uuid())
+  organizationId    String
+
+  // Webhook Config
+  url               String
+  events            String[] // ["high_risk", "new_analysis", "weekly_report", "customer_churned"]
+  secret            String   // For signature verification
+  active            Boolean  @default(true)
+
+  // Metadata
+  lastTriggered     DateTime?
+  createdAt         DateTime @default(now())
+
+  // Relations
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, active])
+}
+
+// ============================================
+// INTEGRATION CONFIGS
+// ============================================
+// This is stored in Organization.integrations as JSON:
+// {
+//   zendesk: {
+//     enabled: true,
+//     subdomain: "company",
+//     email: "account@company.zendesk.com",
+//     apiToken: "encrypted",
+//     lastSync: "2025-03-27T10:00:00Z"
+//   },
+//   intercom: {
+//     enabled: true,
+//     accessToken: "encrypted",
+//     lastSync: "2025-03-27T10:00:00Z"
+//   },
+//   helpscout: {
+//     enabled: true,
+//     mailboxes: ["12345"],
+//     apiKey: "encrypted",
+//     lastSync: "2025-03-27T10:00:00Z"
+//   }
+// }
+
+// ============================================
+// NOTIFICATION SETTINGS
+// ============================================
+// This is stored in Organization.settings as JSON:
+// {
+//   notifications: {
+//     reportFrequency: "weekly", // daily, weekly, monthly
+//     reportDay: "monday",
+//     reportTime: "09:00",
+//     riskThreshold: 7,
+//     additionalEmails: ["user@example.com"],
+//     alerts: {
+//       highRisk: true,
+//       newAnalysis: false,
+//       weeklyReport: true
+//     }
+//   }
+// }
+
+// ============================================
+// CHURN PREDICTIONS (Legacy - Keep for compatibility)
+// ============================================
 model ChurnPrediction {
   id                  String   @id @default(uuid())
   customerId          String
@@ -26,30 +276,24 @@ model ChurnPrediction {
   updatedAt           DateTime @updatedAt
 
   // Relations
-  customer            Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  organization        Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
   @@index([organizationId])
   @@index([riskLevel])
   @@index([churnRisk])
   @@index([createdAt(sort: Desc)])
-  @@index([customerId], where: { churnRisk: { gte: 50 } })
 }
 
-// Example of related models (adjust based on your actual schema)
+// ============================================
+// CUSTOMER (Legacy - Keep for compatibility)
+// ============================================
 model Customer {
   id              String    @id
   email           String
   organizationId  String
   predictions     ChurnPrediction[]
-  // ... other fields
-}
 
-model Organization {
-  id              String    @id
-  name            String
-  predictions     ChurnPrediction[]
-  customers       Customer[]
-  // ... other fields
+  @@index([organizationId])
+  @@index([email])
 }

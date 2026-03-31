@@ -33,12 +33,12 @@ export function Navbar() {
   // When Clerk is configured, we'll dynamically load the auth version
   if (!isClerkConfigured) {
     return (
-      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white">
+      <nav className="sticky top-0 z-50 border-b border-neutral-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-xl font-bold text-neutral-900">
                 Support Intelligence
               </span>
             </Link>
@@ -49,10 +49,10 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-blue-600 ${
+                  className={`text-sm font-medium transition-colors hover:text-neutral-600 ${
                     pathname === link.href
-                      ? "text-blue-600"
-                      : "text-gray-700"
+                      ? "text-neutral-900 font-medium"
+                      : "text-neutral-700"
                   }`}
                 >
                   {link.label}
@@ -85,13 +85,13 @@ export function Navbar() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="border-t border-gray-200 bg-white md:hidden">
+          <div className="border-t border-neutral-200 bg-white md:hidden">
             <div className="space-y-1 px-4 py-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                  className="block rounded-lg px-3 py-2 text-base font-medium text-neutral-700 hover:bg-neutral-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -99,14 +99,14 @@ export function Navbar() {
               ))}
               <Link
                 href="/sign-in"
-                className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                className="block rounded-lg px-3 py-2 text-base font-medium text-neutral-700 hover:bg-neutral-100"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Sign In
               </Link>
               <Link
                 href="/pricing"
-                className="block rounded-lg bg-blue-600 px-3 py-2 text-center text-base font-medium text-white hover:bg-blue-700"
+                className="block rounded-lg bg-primary px-3 py-2 text-center text-base font-medium text-white hover:bg-primary-hover"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Get Started

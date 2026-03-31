@@ -20,9 +20,9 @@ interface RiskDistributionChartProps {
 }
 
 const COLORS = {
-  high: "#ef4444",
-  medium: "#f59e0b",
-  low: "#10b981",
+  high: "#7f1d1d",
+  medium: "#b45309",
+  low: "#4d7c0f",
 };
 
 export function RiskDistributionChart({ data }: RiskDistributionChartProps) {

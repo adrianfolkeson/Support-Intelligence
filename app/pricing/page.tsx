@@ -38,10 +38,10 @@ export default function PricingPage() {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 sm:text-5xl">
+          <h1 className="text-4xl font-bold text-neutral-900 sm:text-5xl tracking-tight">
             Simple, transparent pricing
           </h1>
-          <p className="mt-4 text-lg text-gray-600">
+          <p className="mt-4 text-lg text-neutral-600">
             Start your 30-day free trial today.
           </p>
         </div>
@@ -51,24 +51,24 @@ export default function PricingPage() {
           <Card className="w-full max-w-lg">
             <CardContent className="p-8">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900">Professional</h2>
+                <h2 className="text-2xl font-bold text-neutral-900">Professional</h2>
                 <div className="mt-6 flex items-baseline justify-center">
-                  <span className="text-5xl font-bold text-gray-900">$149</span>
-                  <span className="ml-2 text-xl text-gray-500">/month</span>
+                  <span className="text-5xl font-bold text-neutral-900">$149</span>
+                  <span className="ml-2 text-xl text-neutral-500">/month</span>
                 </div>
                 <p className="mt-2">
-                  <span className="text-lg text-gray-400 line-through">$249</span>
-                  <span className="ml-2 text-sm text-green-600 font-medium">Launch pricing</span>
+                  <span className="text-lg text-neutral-400 line-through">$249</span>
+                  <span className="ml-2 text-sm text-success font-medium">Launch pricing</span>
                 </p>
               </div>
 
               <ul className="mt-8 space-y-4">
                 {features.map((feature) => (
                   <li key={feature} className="flex items-center">
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100">
-                      <Check className="h-4 w-4 text-green-600" />
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success/10">
+                      <Check className="h-4 w-4 text-success" />
                     </div>
-                    <span className="ml-3 text-gray-700">{feature}</span>
+                    <span className="ml-3 text-neutral-700">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -76,7 +76,7 @@ export default function PricingPage() {
               <button
                 onClick={handleSubscribe}
                 disabled={isLoading}
-                className="mt-8 w-full rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="mt-8 w-full rounded-lg bg-primary px-4 py-3 text-white font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-subtle"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
@@ -93,7 +93,7 @@ export default function PricingPage() {
 
         {/* FAQ */}
         <div className="mt-24 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 text-center">
+          <h2 className="text-2xl font-bold text-neutral-900 text-center">
             Frequently Asked Questions
           </h2>
           <div className="mt-8 space-y-6">
@@ -107,9 +107,9 @@ export default function PricingPage() {
                 a: "We accept all major credit cards through Stripe.",
               },
             ].map((faq) => (
-              <div key={faq.q} className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-medium text-gray-900">{faq.q}</h3>
-                <p className="mt-2 text-gray-600">{faq.a}</p>
+              <div key={faq.q} className="border-b border-neutral-200 pb-6">
+                <h3 className="text-lg font-medium text-neutral-900">{faq.q}</h3>
+                <p className="mt-2 text-neutral-600">{faq.a}</p>
               </div>
             ))}
           </div>

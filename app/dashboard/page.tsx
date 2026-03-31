@@ -33,8 +33,8 @@ function DashboardContent() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Not Configured</h1>
-          <p className="text-gray-600">Please set up Clerk authentication to access this page.</p>
+          <h1 className="text-2xl font-bold text-neutral-900 mb-2">Authentication Not Configured</h1>
+          <p className="text-neutral-600">Please set up Clerk authentication to access this page.</p>
         </div>
       </div>
     );
@@ -175,20 +175,20 @@ function DashboardContent() {
       <div className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">Let&apos;s get you set up</h1>
-            <p className="mt-4 text-lg text-gray-600">
+            <h1 className="text-3xl font-bold text-neutral-900">Let&apos;s get you set up</h1>
+            <p className="mt-4 text-lg text-neutral-600">
               Connect your data source to start analyzing customer churn risk
             </p>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2">
             {/* Connect Zendesk */}
-            <div className="rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                <LinkIcon className="h-6 w-6 text-blue-600" />
+            <div className="rounded-2xl bg-white p-8 shadow-card border border-neutral-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100">
+                <LinkIcon className="h-6 w-6 text-neutral-700" />
               </div>
-              <h2 className="mt-4 text-xl font-semibold text-gray-900">Connect Zendesk</h2>
-              <p className="mt-2 text-gray-600">
+              <h2 className="mt-4 text-xl font-semibold text-neutral-900">Connect Zendesk</h2>
+              <p className="mt-2 text-neutral-600">
                 Automatically import and analyze your support tickets from Zendesk
               </p>
               <div className="mt-6">
@@ -199,12 +199,12 @@ function DashboardContent() {
             </div>
 
             {/* Upload CSV */}
-            <div className="rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
-                <Download className="h-6 w-6 text-purple-600" />
+            <div className="rounded-2xl bg-white p-8 shadow-card border border-neutral-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100">
+                <Download className="h-6 w-6 text-neutral-700" />
               </div>
-              <h2 className="mt-4 text-xl font-semibold text-gray-900">Upload CSV</h2>
-              <p className="mt-2 text-gray-600">
+              <h2 className="mt-4 text-xl font-semibold text-neutral-900">Upload CSV</h2>
+              <p className="mt-2 text-neutral-600">
                 Upload a CSV file of your support tickets for manual import
               </p>
               <div className="mt-6">
@@ -216,19 +216,19 @@ function DashboardContent() {
           </div>
 
           {/* Setup Progress */}
-          <div className="mt-12 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Setup Progress</h3>
+          <div className="mt-12 rounded-2xl bg-white p-6 shadow-card border border-neutral-200">
+            <h3 className="text-lg font-semibold text-neutral-900">Setup Progress</h3>
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Account created</span>
+                <span className="text-neutral-600">Account created</span>
                 <Badge variant="success">Complete</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Connect data source</span>
+                <span className="text-neutral-600">Connect data source</span>
                 <Badge variant="warning">Pending</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">AI analysis</span>
+                <span className="text-neutral-600">AI analysis</span>
                 <Badge variant="default">Waiting for data</Badge>
               </div>
             </div>
@@ -247,8 +247,8 @@ function DashboardContent() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="mt-2 text-gray-600">
+            <h1 className="text-3xl font-bold text-neutral-900">Dashboard</h1>
+            <p className="mt-2 text-neutral-600">
               Monitor your customer churn risk and take action
             </p>
           </div>
@@ -287,13 +287,13 @@ function DashboardContent() {
 
         {/* Alert for high-risk customers */}
         {highRiskCount > 0 && (
-          <div className="mt-6 rounded-lg bg-red-50 p-4 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="mt-6 rounded-lg bg-error/10 p-4 flex items-start gap-3 border border-error/20">
+            <AlertTriangle className="h-5 w-5 text-error shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-red-800">
+              <p className="font-medium text-error">
                 {highRiskCount} customer{highRiskCount > 1 ? "s" : ""} need attention
               </p>
-              <p className="text-sm text-red-700">
+              <p className="text-sm text-neutral-700">
                 High churn risk detected. Review these tickets immediately.
               </p>
             </div>
@@ -381,48 +381,48 @@ function DashboardContent() {
         {/* Recent Tickets */}
         <div className="mt-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Tickets</h2>
+            <h2 className="text-xl font-semibold text-neutral-900">Recent Tickets</h2>
             <Link
               href="/tickets"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-neutral-700 hover:underline"
             >
               View all
             </Link>
           </div>
-          <div className="mt-4 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
+          <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-card border border-neutral-200">
             {tickets.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-neutral-500">
                 No tickets yet. Sync your data to get started.
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-neutral-200">
+                <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                       Subject
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                       Risk Score
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-500">
                       Date
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-neutral-200">
                   {tickets.map((ticket) => (
                     <tr
                       key={ticket.id}
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-neutral-50"
                       onClick={() => router.push(`/tickets/${ticket.id}`)}
                     >
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-900">
                         {ticket.customerEmail || "Unknown"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600">
                         {ticket.subject?.length > 50
                           ? ticket.subject.substring(0, 50) + "..."
                           : ticket.subject || "-"}
@@ -430,7 +430,7 @@ function DashboardContent() {
                       <td className="whitespace-nowrap px-6 py-4">
                         <RiskBadge risk={ticket.churnRisk || 0} />
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
                         {ticket.createdAt
                           ? new Date(ticket.createdAt).toLocaleDateString()
                           : "-"}
@@ -446,22 +446,22 @@ function DashboardContent() {
         {/* Quick Links */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div
-            className="cursor-pointer rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+            className="cursor-pointer rounded-2xl bg-white p-6 shadow-card border border-neutral-200 transition-colors hover:bg-neutral-50"
             onClick={() => router.push("/reports")}
           >
-            <FileText className="h-8 w-8 text-blue-600" />
-            <h3 className="mt-3 font-semibold text-gray-900">Weekly Reports</h3>
-            <p className="mt-1 text-sm text-gray-600">
+            <FileText className="h-8 w-8 text-neutral-700" />
+            <h3 className="mt-3 font-semibold text-neutral-900">Weekly Reports</h3>
+            <p className="mt-1 text-sm text-neutral-600">
               View comprehensive weekly analysis
             </p>
           </div>
           <div
-            className="cursor-pointer rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+            className="cursor-pointer rounded-2xl bg-white p-6 shadow-card border border-neutral-200 transition-colors hover:bg-neutral-50"
             onClick={() => router.push("/settings")}
           >
-            <Settings className="h-8 w-8 text-blue-600" />
-            <h3 className="mt-3 font-semibold text-gray-900">Settings</h3>
-            <p className="mt-1 text-sm text-gray-600">
+            <Settings className="h-8 w-8 text-neutral-700" />
+            <h3 className="mt-3 font-semibold text-neutral-900">Settings</h3>
+            <p className="mt-1 text-sm text-neutral-600">
               Manage integrations and preferences
             </p>
           </div>

@@ -22,14 +22,14 @@ interface CategoryBreakdownChartProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  bug: "#ef4444",
-  feature_request: "#3b82f6",
-  billing: "#f59e0b",
-  performance: "#8b5cf6",
-  documentation: "#6b7280",
-  reliability: "#ec4899",
-  limitation: "#14b8a6",
-  feedback: "#10b981",
+  bug: "#7f1d1d",
+  feature_request: "#1e3a5f",
+  billing: "#b45309",
+  performance: "#262626",
+  documentation: "#737373",
+  reliability: "#525252",
+  limitation: "#404040",
+  feedback: "#4d7c0f",
 };
 
 export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
@@ -65,7 +65,7 @@ export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
             {data.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={CATEGORY_COLORS[entry.category] || "#6b7280"}
+                fill={CATEGORY_COLORS[entry.category] || "#737373"}
               />
             ))}
           </Bar>

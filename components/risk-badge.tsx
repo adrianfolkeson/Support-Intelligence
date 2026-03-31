@@ -7,9 +7,9 @@ interface RiskBadgeProps {
 
 export function RiskBadge({ risk, className }: RiskBadgeProps) {
   const getColor = () => {
-    if (risk >= 8) return "bg-red-100 text-red-800";
-    if (risk >= 5) return "bg-yellow-100 text-yellow-800";
-    return "bg-green-100 text-green-800";
+    if (risk >= 8) return "bg-error/10 text-error border border-error/20";
+    if (risk >= 5) return "bg-warning/10 text-warning border border-warning/20";
+    return "bg-success/10 text-success border border-success/20";
   };
 
   return (

@@ -58,19 +58,19 @@ export function ChurnTrendChart({ data }: ChurnTrendChartProps) {
             yAxisId="left"
             type="monotone"
             dataKey="avgRiskScore"
-            stroke="#3b82f6"
+            stroke="#262626"
             strokeWidth={2}
             name="Avg Risk Score"
-            dot={{ fill: "#3b82f6", r: 4 }}
+            dot={{ fill: "#262626", r: 4 }}
           />
           <Line
             yAxisId="right"
             type="monotone"
             dataKey="highRiskCount"
-            stroke="#ef4444"
+            stroke="#7f1d1d"
             strokeWidth={2}
             name="High Risk Count"
-            dot={{ fill: "#ef4444", r: 4 }}
+            dot={{ fill: "#7f1d1d", r: 4 }}
           />
         </LineChart>
       </ResponsiveContainer>

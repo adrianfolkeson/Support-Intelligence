@@ -39,8 +39,8 @@ export default function AnalyticsPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Not Configured</h1>
-          <p className="text-gray-600">Please set up Clerk authentication to access this page.</p>
+          <h1 className="text-2xl font-bold text-neutral-900 mb-2">Authentication Not Configured</h1>
+          <p className="text-neutral-600">Please set up Clerk authentication to access this page.</p>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
       <div className="flex min-h-screen">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     );
@@ -110,14 +110,14 @@ export default function AnalyticsPage() {
   const improvementPercent = previousRisk > 0 ? ((previousRisk - latestRisk) / previousRisk * 100).toFixed(1) : "0";
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-neutral-50">
       <Navbar />
 
       <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Churn Trends Analytics</h1>
-            <p className="mt-2 text-gray-600">Track your churn risk over time and identify patterns</p>
+            <h1 className="text-3xl font-bold text-neutral-900">Churn Trends Analytics</h1>
+            <p className="mt-2 text-neutral-600">Track your churn risk over time and identify patterns</p>
           </div>
 
           {/* Summary Cards */}
@@ -126,10 +126,10 @@ export default function AnalyticsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Current Risk Score</p>
-                    <p className="text-2xl font-bold text-gray-900">{latestRisk.toFixed(1)}</p>
+                    <p className="text-sm text-neutral-600">Current Risk Score</p>
+                    <p className="text-2xl font-bold text-neutral-900">{latestRisk.toFixed(1)}</p>
                   </div>
-                  <div className={`flex items-center gap-1 text-sm ${improved ? "text-green-600" : "text-red-600"}`}>
+                  <div className={`flex items-center gap-1 text-sm ${improved ? "text-success" : "text-error"}`}>
                     {improved ? <TrendingDown className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
                     <span>{improvementPercent}%</span>
                   </div>
@@ -141,12 +141,12 @@ export default function AnalyticsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">30-Day Avg</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-neutral-600">30-Day Avg</p>
+                    <p className="text-2xl font-bold text-neutral-900">
                       {(trendData.reduce((acc, t) => acc + t.avgRiskScore, 0) / trendData.length).toFixed(1)}
                     </p>
                   </div>
-                  <Calendar className="h-8 w-8 text-blue-600" />
+                  <Calendar className="h-8 w-8 text-primary" />
                 </div>
               </CardContent>
             </Card>
@@ -155,12 +155,12 @@ export default function AnalyticsPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Churned (30d)</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-neutral-600">Total Churned (30d)</p>
+                    <p className="text-2xl font-bold text-neutral-900">
                       {trendData.reduce((acc, t) => acc + (t.churnedCustomers || 0), 0)}
                     </p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-red-600" />
+                  <TrendingUp className="h-8 w-8 text-error" />
                 </div>
               </CardContent>
             </Card>
@@ -188,21 +188,21 @@ export default function AnalyticsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-3 px-4 text-left font-medium text-gray-600">Cohort</th>
-                      <th className="py-3 px-4 text-center font-medium text-gray-600">Month 0</th>
-                      <th className="py-3 px-4 text-center font-medium text-gray-600">Month 1</th>
-                      <th className="py-3 px-4 text-center font-medium text-gray-600">Month 2</th>
-                      <th className="py-3 px-4 text-center font-medium text-gray-600">Month 3</th>
+                      <th className="py-3 px-4 text-left font-medium text-neutral-600">Cohort</th>
+                      <th className="py-3 px-4 text-center font-medium text-neutral-600">Month 0</th>
+                      <th className="py-3 px-4 text-center font-medium text-neutral-600">Month 1</th>
+                      <th className="py-3 px-4 text-center font-medium text-neutral-600">Month 2</th>
+                      <th className="py-3 px-4 text-center font-medium text-neutral-600">Month 3</th>
                     </tr>
                   </thead>
                   <tbody>
                     {cohortData.map((cohort) => (
                       <tr key={cohort.cohort} className="border-b">
-                        <td className="py-3 px-4 font-medium text-gray-900">{cohort.cohort}</td>
-                        <td className="py-3 px-4 text-center text-green-600">{cohort.month0}%</td>
-                        <td className="py-3 px-4 text-center text-green-600">{cohort.month1}%</td>
-                        <td className="py-3 px-4 text-center text-green-600">{cohort.month2}%</td>
-                        <td className="py-3 px-4 text-center text-green-600">{cohort.month3}%</td>
+                        <td className="py-3 px-4 font-medium text-neutral-900">{cohort.cohort}</td>
+                        <td className="py-3 px-4 text-center text-success">{cohort.month0}%</td>
+                        <td className="py-3 px-4 text-center text-success">{cohort.month1}%</td>
+                        <td className="py-3 px-4 text-center text-success">{cohort.month2}%</td>
+                        <td className="py-3 px-4 text-center text-success">{cohort.month3}%</td>
                       </tr>
                     ))}
                   </tbody>

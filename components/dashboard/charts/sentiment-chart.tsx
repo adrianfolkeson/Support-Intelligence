@@ -45,9 +45,9 @@ export function SentimentChart({ data }: SentimentChartProps) {
             }}
           />
           <Legend />
-          <Bar dataKey="positive" fill="#10b981" name="Positive" stackId="sentiment" />
-          <Bar dataKey="neutral" fill="#6b7280" name="Neutral" stackId="sentiment" />
-          <Bar dataKey="negative" fill="#ef4444" name="Negative" stackId="sentiment" />
+          <Bar dataKey="positive" fill="#4d7c0f" name="Positive" stackId="sentiment" />
+          <Bar dataKey="neutral" fill="#737373" name="Neutral" stackId="sentiment" />
+          <Bar dataKey="negative" fill="#7f1d1d" name="Negative" stackId="sentiment" />
         </BarChart>
       </ResponsiveContainer>
     </div>

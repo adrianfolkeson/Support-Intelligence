@@ -32,7 +32,7 @@ export function useUserProfile() {
           } else if (user) {
             setUser({
               id: user.id,
-              email: user.email,
+              email: user.email ?? null,
               user_metadata: user.user_metadata,
             });
           }

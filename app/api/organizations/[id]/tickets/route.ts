@@ -28,7 +28,10 @@ export async function GET(
     // Verify user is a member
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: { userId, organizationId },
+        AND: [
+          { userId },
+          { organizationId },
+        ],
       },
     });
 
@@ -43,7 +46,7 @@ export async function GET(
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: "Invalid query parameters", details: validation.error.errors },
+        { error: "Invalid query parameters", details: validation.error.issues },
         { status: 400 }
       );
     }

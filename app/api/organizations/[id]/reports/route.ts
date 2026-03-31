@@ -19,7 +19,10 @@ export async function GET(
     // Verify user is a member
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: { userId, organizationId },
+        AND: [
+          { userId },
+          { organizationId },
+        ],
       },
     });
 

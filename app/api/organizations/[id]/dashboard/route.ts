@@ -18,7 +18,10 @@ export async function GET(
     // Verify user is a member
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: { userId, organizationId },
+        AND: [
+          { userId },
+          { organizationId },
+        ],
       },
     });
 
@@ -58,19 +61,24 @@ export async function GET(
       include: {
         analysis: {
           where: { churnRisk: { gte: 7 } },
-          orderBy: { churnRisk: 'desc' },
         },
       },
       orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
+    // Filter and sort by churn risk in JavaScript
+    const sortedHighRiskTickets = recentHighRiskTickets
+      .filter(t => t.analysis)
+      .sort((a, b) => (b.analysis?.churnRisk || 0) - (a.analysis?.churnRisk || 0))
+      .slice(0, 5);
+
     const stats = {
       totalTickets,
       analyzedTickets,
-      highRiskCount,
+      highRiskCount: highRiskTickets,
       averageRiskScore: avgRiskScore.toFixed(1),
-      recentTickets: recentHighRiskTickets.map(t => ({
+      recentTickets: sortedHighRiskTickets.map(t => ({
         id: t.id,
         subject: t.subject,
         customerEmail: t.customerEmail,

@@ -30,18 +30,18 @@ export interface IntegrationProvider {
 // ============================================
 // ZENDESK PROVIDER
 // ============================================
-import { fetchTicketsFromZendesk, testZendeskConnection } from './zendesk';
+import { fetchTicketsFromZendesk, testZendeskConnection } from '../zendesk';
 
 const zendeskProvider: IntegrationProvider = {
   type: 'zendesk',
   name: 'Zendesk',
 
   async test(config) {
-    return await testZendeskConnection(config);
+    return await testZendeskConnection(config as any);
   },
 
   async fetchTickets(config, options = {}) {
-    const tickets = await fetchTicketsFromZendesk(config, options);
+    const tickets = await fetchTicketsFromZendesk(config as any, options);
     return tickets.map(t => ({
       id: t.id.toString(),
       subject: t.subject,
@@ -62,7 +62,7 @@ class CustomProvider implements IntegrationProvider {
   type = 'custom';
   name = 'Custom API';
 
-  async test(config) {
+  async test(config: any) {
     try {
       // Test your custom API
       const response = await fetch(config.apiUrl + '/health', {
@@ -81,7 +81,7 @@ class CustomProvider implements IntegrationProvider {
     }
   }
 
-  async fetchTickets(config, options = {}) {
+  async fetchTickets(config: any, options = {}) {
     // Implement your custom API logic here
     const response = await fetch(config.apiUrl + '/tickets', {
       headers: {

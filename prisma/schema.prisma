@@ -1,6 +1,10 @@
 // Support-Intel Complete Database Schema
 
-generator = client {
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
@@ -36,6 +40,7 @@ model Organization {
   reports           Report[]
   webhooks          Webhook[]
   users             OrganizationUser[]
+  predictions       ChurnPrediction[]
 
   @@index([clerkUserId])
   @@index([slug])
@@ -277,6 +282,7 @@ model ChurnPrediction {
 
   // Relations
   organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer            Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
   @@index([organizationId])

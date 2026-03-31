@@ -301,3 +301,67 @@ function calculateUsageDecline(usageData: any): number {
   const decline = ((previous - current) / previous) * 100;
   return Math.max(0, Math.min(100, decline));
 }
+
+/**
+ * Analyze a single support ticket for churn risk and sentiment
+ * This is a stub implementation that returns placeholder analysis
+ */
+export async function analyzeTicket(
+  ticketId: string,
+  subject: string,
+  description: string,
+  organizationId: string
+): Promise<{
+  churnRisk: number;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  frustration: number;
+  category?: string;
+  keyFactors: string[];
+  recommendedActions: string[];
+}> {
+  // Stub implementation - in production this would call Claude AI
+  // For now, return basic sentiment analysis based on keywords
+  const text = `${subject} ${description}`.toLowerCase();
+
+  // Simple keyword-based sentiment analysis
+  const positiveWords = ['thank', 'great', 'love', 'helpful', 'working', 'fixed'];
+  const negativeWords = ['broken', 'not working', 'error', 'issue', 'problem', 'frustrating', 'angry'];
+  const urgentWords = ['urgent', 'asap', 'immediately', 'critical', 'broken'];
+
+  const positiveCount = positiveWords.filter(w => text.includes(w)).length;
+  const negativeCount = negativeWords.filter(w => text.includes(w)).length;
+  const urgentCount = urgentWords.filter(w => text.includes(w)).length;
+
+  // Calculate scores
+  let sentiment: 'positive' | 'neutral' | 'negative' = 'neutral';
+  if (positiveCount > negativeCount) sentiment = 'positive';
+  if (negativeCount > positiveCount) sentiment = 'negative';
+
+  const frustration = Math.min(10, 2 + urgentCount * 2 + negativeCount);
+  const churnRisk = Math.min(10, frustration + (negativeCount > 2 ? 2 : 0));
+
+  // Simple categorization
+  const categories = {
+    bug: ['bug', 'error', 'broken', 'crash', 'not working'],
+    feature: ['feature', 'request', 'add', 'would like'],
+    billing: ['billing', 'charge', 'payment', 'refund', 'invoice'],
+    support: ['help', 'how to', 'question', 'documentation'],
+  };
+
+  let category: string | undefined;
+  for (const [cat, keywords] of Object.entries(categories)) {
+    if (keywords.some(kw => text.includes(kw))) {
+      category = cat;
+      break;
+    }
+  }
+
+  return {
+    churnRisk,
+    sentiment,
+    frustration,
+    category,
+    keyFactors: negativeCount > 0 ? ['Multiple issues reported'] : [],
+    recommendedActions: churnRisk > 5 ? ['Immediate follow-up required'] : [],
+  };
+}

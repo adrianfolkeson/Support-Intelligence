@@ -25,12 +25,12 @@ export async function GET(
     }
 
     // Check if user is a member of this organization
-    const orgUser = await prisma.organizationUser.findUnique({
+    const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId: id,
-        },
+        AND: [
+          { userId },
+          { organizationId: id },
+        ],
       },
     });
 
@@ -39,7 +39,7 @@ export async function GET(
     }
 
     const organization = await prisma.organization.findUnique({
-      where: { id },
+      where: { id: id },
       include: {
         _count: {
           select: { tickets: true, users: true },
@@ -76,10 +76,10 @@ export async function PUT(
     // Check if user is owner or admin
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId: id,
-        },
+        AND: [
+          { userId },
+          { organizationId: id },
+        ],
         role: { in: ["owner", "admin"] },
       },
     });
@@ -98,7 +98,7 @@ export async function PUT(
       return NextResponse.json(
         {
           error: "Validation failed",
-          details: validationResult.error.errors.map((e) => ({
+          details: validationResult.error.issues.map((e) => ({
             field: e.path.join("."),
             message: e.message,
           })),
@@ -110,7 +110,7 @@ export async function PUT(
     const { name, slug } = validationResult.data;
 
     const organization = await prisma.organization.update({
-      where: { id },
+      where: { id: id },
       data: {
         ...(name && { name }),
         ...(slug && { slug }),
@@ -150,10 +150,10 @@ export async function DELETE(
     // Check if user is owner
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId: id,
-        },
+        AND: [
+          { userId },
+          { organizationId: id },
+        ],
         role: "owner",
       },
     });
@@ -167,7 +167,7 @@ export async function DELETE(
 
     // Delete organization (cascade will delete related records)
     await prisma.organization.delete({
-      where: { id },
+      where: { id: id },
     });
 
     return NextResponse.json({ message: "Organization deleted successfully" });

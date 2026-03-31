@@ -18,10 +18,10 @@ export async function POST(
     // Check if user is owner or admin
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId,
-        },
+        AND: [
+          { userId },
+          { organizationId },
+        ],
         role: { in: ["owner", "admin"] },
       },
     });
@@ -35,7 +35,7 @@ export async function POST(
 
     // Get organization for Aurora API
     const organization = await prisma.organization.findUnique({
-      where: { id },
+      where: { id: organizationId },
     });
 
     if (!organization) {

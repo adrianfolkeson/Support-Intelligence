@@ -16,7 +16,7 @@ export async function GET(
     }
 
     const report = await prisma.report.findUnique({
-      where: { id },
+      where: { id: id },
     });
 
     if (!report) {
@@ -26,10 +26,10 @@ export async function GET(
     // Verify user has access
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId: report.organizationId,
-        },
+        AND: [
+          { userId },
+          { organizationId: report.organizationId },
+        ],
       },
     });
 

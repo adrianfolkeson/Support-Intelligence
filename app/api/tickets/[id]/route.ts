@@ -16,7 +16,7 @@ export async function GET(
     }
 
     const ticket = await prisma.ticket.findUnique({
-      where: { id },
+      where: { id: id },
       include: {
         analysis: true,
         organization: {
@@ -35,10 +35,10 @@ export async function GET(
     // Verify user has access to this ticket's organization
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId: ticket.organizationId,
-        },
+        AND: [
+          { userId },
+          { organizationId: ticket.organizationId },
+        ],
       },
     });
 

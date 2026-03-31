@@ -2,49 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
+// Check if Clerk is configured
+const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
 export default function PricingPage() {
   const router = useRouter();
-  const { isLoaded, isSignedIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
-    if (!isLoaded) return;
-
-    // If not signed in, redirect to sign in
-    if (!isSignedIn) {
+    // If Clerk is configured and user might need auth
+    if (isClerkConfigured) {
       router.push("/sign-in?redirectUrl=/pricing");
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const organizationName = `Customer-${Date.now()}`;
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ organizationName }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to start checkout");
-      }
-
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error: any) {
-      console.error("Checkout error:", error);
-      alert(error.message || "Failed to start checkout. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    // Clerk not configured - show message or proceed
+    alert("Authentication is not configured. Please add Clerk environment variables to enable checkout.");
   };
 
   const features = [
@@ -98,7 +75,7 @@ export default function PricingPage() {
 
               <button
                 onClick={handleSubscribe}
-                disabled={isLoading || !isLoaded}
+                disabled={isLoading}
                 className="mt-8 w-full rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? (

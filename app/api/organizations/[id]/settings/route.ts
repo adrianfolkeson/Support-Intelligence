@@ -35,7 +35,10 @@ export async function GET(
     // Verify user is a member
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: { userId, organizationId: id },
+        AND: [
+          { userId },
+          { organizationId: id },
+        ],
       },
     });
 
@@ -44,7 +47,7 @@ export async function GET(
     }
 
     const organization = await prisma.organization.findUnique({
-      where: { id },
+      where: { id: id },
       select: { settings: true },
     });
 
@@ -73,10 +76,10 @@ export async function PUT(
     // Check if user is owner or admin
     const orgUser = await prisma.organizationUser.findFirst({
       where: {
-        userId_organizationId: {
-          userId,
-          organizationId: id,
-        },
+        AND: [
+          { userId },
+          { organizationId: id },
+        ],
         role: { in: ["owner", "admin"] },
       },
     });
@@ -95,14 +98,14 @@ export async function PUT(
       return NextResponse.json(
         {
           error: "Validation failed",
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         },
         { status: 400 }
       );
     }
 
     const organization = await prisma.organization.update({
-      where: { id },
+      where: { id: id },
       data: {
         settings: validationResult.data,
       },

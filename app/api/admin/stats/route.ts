@@ -38,7 +38,7 @@ export async function GET() {
       monthlyRevenue,
       analyzedTickets: totalAnalysis,
       highRiskCount,
-      averageRiskScore: avgRiskAvg?._avg.churnRisk?.toFixed(1) || '0',
+      averageRiskScore: avgRisk?._avg.churnRisk?.toFixed(1) || '0',
       churnRate: totalOrganizations > 0 ? ((1 - (activeOrganizations / totalOrganizations)) * 100).toFixed(1) : '0',
     });
   } catch (error: any) {

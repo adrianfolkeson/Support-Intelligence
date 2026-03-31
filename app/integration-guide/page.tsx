@@ -138,8 +138,8 @@ export default function IntegrationGuidePage() {
               <h3 className="font-semibold text-gray-900 mb-2">Need Help?</h3>
               <p className="text-gray-600">
                 If you&apos;re having trouble with the integration, please contact us at{" "}
-                <a href="mailto:support@supportintelligence.com" className="text-blue-600 hover:underline">
-                  support@supportintelligence.com
+                <a href="mailto:info@auroraecom.se" className="text-blue-600 hover:underline">
+                  info@auroraecom.se
                 </a>
               </p>
             </CardContent>

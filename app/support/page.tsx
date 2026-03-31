@@ -57,10 +57,10 @@ export default function SupportPage() {
                 Get help via email. We typically respond within 24 hours.
               </p>
               <a
-                href="mailto:support@supportintelligence.com"
+                href="mailto:info@auroraecom.se"
                 className="mt-4 inline-block text-blue-600 hover:underline"
               >
-                support@supportintelligence.com
+                info@auroraecom.se
               </a>
             </CardContent>
           </Card>
@@ -122,7 +122,7 @@ export default function SupportPage() {
               Our support team is here to help. Reach out anytime.
             </p>
             <a
-              href="mailto:support@supportintelligence.com"
+              href="mailto:info@auroraecom.se"
               className="mt-4 inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2 text-white font-medium hover:bg-blue-700"
             >
               Contact Support

@@ -54,7 +54,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:support@supportintelligence.com" className="text-sm text-neutral-600 hover:text-neutral-900">
+                <a href="mailto:info@auroraecom.se" className="text-sm text-neutral-600 hover:text-neutral-900">
                   Contact Us
                 </a>
               </li>

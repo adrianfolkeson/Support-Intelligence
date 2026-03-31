@@ -28,7 +28,7 @@ export default function TermsPage() {
     },
     {
       title: "Contact",
-      content: "For questions about these terms, please contact us at support@supportintelligence.com",
+      content: "For questions about these terms, please contact us at info@auroraecom.se",
     },
   ];
 

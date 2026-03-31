@@ -103,8 +103,8 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-semibold text-gray-900">Contact</h2>
             <p className="mt-4 text-gray-600">
               For privacy-related questions or requests, please contact us at:
-              <a href="mailto:privacy@supportintelligence.com" className="ml-1 text-blue-600 hover:underline">
-                privacy@supportintelligence.com
+              <a href="mailto:info@auroraecom.se" className="ml-1 text-blue-600 hover:underline">
+                info@auroraecom.se
               </a>
             </p>
           </section>

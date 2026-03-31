@@ -5,23 +5,34 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-
-// Check if Clerk is configured
-const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+import { createClient } from "@/lib/supabase/client";
 
 export default function PricingPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubscribe = async () => {
-    // If Clerk is configured and user might need auth
-    if (isClerkConfigured) {
-      router.push("/sign-in?redirectUrl=/pricing");
-      return;
-    }
+    setIsLoading(true);
 
-    // Clerk not configured - show message or proceed
-    alert("Authentication is not configured. Please add Clerk environment variables to enable checkout.");
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        // User not signed in, redirect to sign-in
+        router.push("/sign-in?redirectUrl=/pricing");
+        return;
+      }
+
+      // User is signed in, redirect to checkout
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Error checking auth:", error);
+      // On error, redirect to sign-in
+      router.push("/sign-in?redirectUrl=/pricing");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const features = [

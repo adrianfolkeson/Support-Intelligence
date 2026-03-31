@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/rate-limit";
 import { checkoutSchema, formatZodError } from "@/lib/validations";
 import { handleAPIError, logRequest, logSecurityEvent, requireEnv } from "@/lib/error-handler";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 
 const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'));
 
@@ -14,18 +14,15 @@ export async function POST(request: Request) {
   const start = Date.now();
 
   try {
-    const { userId } = await auth();
+    const { userId, response } = await getAuthenticatedUser();
 
-    if (!userId) {
+    if (response) {
       logSecurityEvent({
         event: 'unauthorized_access',
         details: { reason: 'No user ID found', path: '/api/checkout' }
       });
 
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return response;
     }
 
     // Rate limiting

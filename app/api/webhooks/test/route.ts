@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       },
     };
 
-    const response = await fetch(url, {
+    const webhookResponse = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(testPayload),
     });
 
-    if (response.ok) {
+    if (webhookResponse.ok) {
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json(
-        { error: `Webhook returned status ${response.status}` },
+        { error: `Webhook returned status ${webhookResponse.status}` },
         { status: 400 }
       );
     }

@@ -14,7 +14,7 @@ datasource db {
 // ============================================
 model Organization {
   id                String   @id @default(uuid())
-  clerkUserId        String   // Owner from Clerk
+  supabaseUserId    String   @db.Uuid // Owner from Supabase (changed from clerkUserId)
   name              String
   slug              String?  @unique
 
@@ -42,17 +42,18 @@ model Organization {
   users             OrganizationUser[]
   predictions       ChurnPrediction[]
 
-  @@index([clerkUserId])
+  @@index([supabaseUserId])
   @@index([slug])
   @@index([subscriptionStatus])
 }
 
 // ============================================
-// USERS (Clerk Integration)
+// USER PROFILES (Supabase Integration)
 // ============================================
-model User {
-  id                String              @id @default(uuid())
-  clerkUserId       String              @unique  // From Clerk
+model UserProfile {
+  id                String              @id @db.Uuid // Maps to auth.users.id from Supabase
+  email             String              @unique
+  fullName          String?
 
   // Relations
   organizations     OrganizationUser[]
@@ -60,17 +61,17 @@ model User {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
-  @@index([clerkUserId])
+  @@index([email])
 }
 
 model OrganizationUser {
   id                String       @id @default(uuid())
-  userId            String
+  userId            String       @db.Uuid // Maps to UserProfile.id
   organizationId    String
   role              String       @default("member") // owner, admin, member
 
   // Relations
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userProfile       UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   createdAt         DateTime     @default(now())

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 import {
   getHighRiskCustomers,
   getChurnRiskStats,
@@ -15,13 +15,9 @@ import {
  */
 export async function GET(request: Request) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
 
     const { searchParams } = new URL(request.url);

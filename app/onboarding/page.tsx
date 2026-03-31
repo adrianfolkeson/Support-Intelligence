@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable react-hooks/rules-of-hooks */
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Circle, ArrowRight, ArrowLeft, Link2, Zap, BarChart3, Mail, Settings } from "lucide-react";
@@ -9,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/navbar";
+import { createClient } from "@/lib/supabase/client";
 
 // Force dynamic rendering to avoid pre-rendering with Clerk
 export const dynamic = 'force-dynamic';
@@ -17,25 +16,7 @@ type Step = "welcome" | "integration" | "test" | "analyze" | "complete";
 
 export default function OnboardingPage() {
   const router = useRouter();
-
-  // Check if Clerk is properly configured (not placeholder keys)
-  const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('xxx') &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('_test_');
-
-  if (!isClerkConfigured) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Not Configured</h1>
-          <p className="text-gray-600">Please set up Clerk authentication to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { useAuth } = require("@clerk/nextjs");
-  const { getToken } = useAuth();
+  const supabase = createClient();
   const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const [loading, setLoading] = useState(false);
   const [orgId, setOrgId] = useState<string | null>(null);
@@ -84,7 +65,9 @@ export default function OnboardingPage() {
     setErrorMsg("");
 
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
 
       // Test the connection
       const response = await fetch("/api/integrations/test", {
@@ -123,7 +106,9 @@ export default function OnboardingPage() {
   const handleCreateOrg = async () => {
     setLoading(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
 
       const response = await fetch("/api/organizations", {
         method: "POST",

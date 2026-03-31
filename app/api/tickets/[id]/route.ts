@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 import { prisma } from "@/lib/db";
 
 // GET /api/tickets/[id] - Get single ticket details
@@ -8,12 +8,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    const { id } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
+    const { id } = await params;
 
     const ticket = await prisma.ticket.findUnique({
       where: { id: id },

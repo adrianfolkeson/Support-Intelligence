@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 import { prisma } from "@/lib/db";
 
 // POST /api/organizations/[id]/analyze - Run AI analysis on tickets
@@ -8,12 +8,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    const { id: organizationId } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
+    const { id: organizationId } = await params;
 
     // Check if user is owner or admin
     const orgUser = await prisma.organizationUser.findFirst({

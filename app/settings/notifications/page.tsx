@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable react-hooks/rules-of-hooks */
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Clock, AlertTriangle } from "lucide-react";
@@ -9,30 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/navbar";
+import { createClient } from "@/lib/supabase/client";
 
 export const dynamic = 'force-dynamic';
 
 export default function NotificationsSettingsPage() {
   const router = useRouter();
-
-  // Check if Clerk is properly configured (not placeholder keys)
-  const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('xxx') &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('_test_');
-
-  if (!isClerkConfigured) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Not Configured</h1>
-          <p className="text-gray-600">Please set up Clerk authentication to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { useAuth } = require("@clerk/nextjs");
-  const { getToken } = useAuth();
+  const supabase = createClient();
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,7 +48,10 @@ export default function NotificationsSettingsPage() {
 
   const fetchSettings = async (id: string) => {
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       const response = await fetch(`/api/organizations/${id}/notification-settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -88,7 +72,10 @@ export default function NotificationsSettingsPage() {
 
     setSaving(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       await fetch(`/api/organizations/${orgId}/notification-settings`, {
         method: "POST",
         headers: {

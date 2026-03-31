@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireEnv } from "@/lib/error-handler";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 
 // Validation schemas
 const createOrganizationSchema = z.object({
@@ -19,10 +19,10 @@ const updateOrganizationSchema = z.object({
 // POST /api/organizations - Create new organization
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId, response } = await getAuthenticatedUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (response) {
+      return response;
     }
 
     // Fetch all organizations where user is a member
@@ -65,10 +65,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId, response } = await getAuthenticatedUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (response) {
+      return response;
     }
 
     const body = await req.json();
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     // Create organization
     const organization = await prisma.organization.create({
       data: {
-        clerkUserId: userId,
+        supabaseUserId: userId,
         name,
         slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
         trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial

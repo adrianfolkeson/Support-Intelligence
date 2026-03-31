@@ -6,10 +6,10 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 
-// Check if Clerk is configured with real keys (not placeholder values)
-const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-                          !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('xxx') &&
-                          !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('_test_');
+// Check if Supabase is configured with real keys (not placeholder values)
+const isSupabaseConfigured = !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+                             !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+                             !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project');
 
 export function Navbar() {
   const pathname = usePathname();
@@ -29,9 +29,9 @@ export function Navbar() {
     { href: "/settings", label: "Settings" },
   ];
 
-  // Always show public navbar when Clerk is not configured
-  // When Clerk is configured, we'll dynamically load the auth version
-  if (!isClerkConfigured) {
+  // Always show public navbar when Supabase is not configured
+  // When Supabase is configured, we'll dynamically load the auth version
+  if (!isSupabaseConfigured) {
     return (
       <nav className="sticky top-0 z-50 border-b border-neutral-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -118,7 +118,7 @@ export function Navbar() {
     );
   }
 
-  // Clerk is configured - dynamically import auth navbar using lazy loading
+  // Supabase is configured - dynamically import auth navbar using lazy loading
   const AuthNavbar = require("./navbar-with-auth").NavbarWithAuth;
   return <AuthNavbar />;
 }

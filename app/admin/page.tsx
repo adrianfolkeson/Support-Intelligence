@@ -5,6 +5,7 @@ import { Users, DollarSign, AlertTriangle, TrendingUp, Download, RefreshCw } fro
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
+import { createClient } from "@/lib/supabase/client";
 
 export const dynamic = 'force-dynamic';
 
@@ -30,29 +31,15 @@ export default function AdminPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check if Clerk is properly configured
-  const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('xxx') &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('_test_');
-
   useEffect(() => {
-    if (isClerkConfigured) {
-      fetchAdminData();
-    } else {
-      setLoading(false);
-    }
-  }, [isClerkConfigured]);
+    fetchAdminData();
+  }, []);
 
   const fetchAdminData = async () => {
-    if (!isClerkConfigured) return;
-
     try {
-      // Dynamically import Clerk
-      const { useAuth } = require("@clerk/nextjs");
-      // We can't use hooks inside useEffect, so we'll use a different approach
-      const tokenResponse = await fetch("/api/admin/stats");
-      if (tokenResponse.ok) {
-        const statsData = await tokenResponse.json();
+      const statsResponse = await fetch("/api/admin/stats");
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
         setStats(statsData);
       }
 
@@ -67,19 +54,6 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
-
-  const NotConfiguredMessage = () => (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-2">Authentication Not Configured</h1>
-        <p className="text-neutral-600">Please set up Clerk authentication to access this page.</p>
-      </div>
-    </div>
-  );
-
-  if (!isClerkConfigured) {
-    return <NotConfiguredMessage />;
-  }
 
   if (loading) {
     return (

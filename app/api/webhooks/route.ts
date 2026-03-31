@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 
 // Webhook types
 export type WebhookEvent = "high_risk" | "new_analysis" | "weekly_report" | "customer_churned";
@@ -19,10 +19,9 @@ const webhooksDb: Map<string, Webhook[]> = new Map();
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
 
     const orgId = req.nextUrl.searchParams.get("orgId");
@@ -41,10 +40,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
 
     const { orgId, url, events } = await req.json();
@@ -78,10 +76,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
 
     const { searchParams } = new URL(req.url);

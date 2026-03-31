@@ -1,8 +1,6 @@
 "use client";
 
-/* eslint-disable react-hooks/rules-of-hooks */
-
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Link as LinkIcon, RefreshCw, Download, AlertTriangle, Settings, FileText } from "lucide-react";
@@ -18,30 +16,13 @@ import { ChurnTrendChart } from "@/components/dashboard/charts/churn-trend-chart
 import { RiskDistributionChart } from "@/components/dashboard/charts/risk-distribution-chart";
 import { SentimentChart } from "@/components/dashboard/charts/sentiment-chart";
 import { CategoryBreakdownChart } from "@/components/dashboard/charts/category-breakdown-chart";
+import { createClient } from "@/lib/supabase/client";
 
 export const dynamic = 'force-dynamic';
 
 function DashboardContent() {
   const router = useRouter();
-
-  // Check if Clerk is properly configured (not placeholder keys)
-  const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('xxx') &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('_test_');
-
-  if (!isClerkConfigured) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-neutral-900 mb-2">Authentication Not Configured</h1>
-          <p className="text-neutral-600">Please set up Clerk authentication to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { useAuth } = require("@clerk/nextjs");
-  const { getToken } = useAuth();
+  const supabase = createClient();
   const { showToast } = useToast();
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +58,12 @@ function DashboardContent() {
 
   const fetchData = async (id: string) => {
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error("Not authenticated");
+      }
 
       // Fetch dashboard stats
       const statsData = await fetchAPI(`/api/organizations/${id}/dashboard`, {}, token);
@@ -116,7 +102,10 @@ function DashboardContent() {
     if (!orgId) return;
     setSyncing(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       await fetchAPI(`/api/organizations/${orgId}/sync-zendesk`, { method: "POST" }, token);
       showToast("Sync started successfully", "success");
       // Refresh data after a delay
@@ -132,7 +121,10 @@ function DashboardContent() {
     if (!orgId) return;
     setAnalyzing(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       await fetchAPI(`/api/organizations/${orgId}/analyze`, { method: "POST" }, token);
       showToast("Analysis started", "success");
       setTimeout(() => fetchData(orgId), 3000);
@@ -146,7 +138,10 @@ function DashboardContent() {
   const handleExport = async () => {
     if (!orgId) return;
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       const data = await fetchAPI(`/api/organizations/${orgId}/export`, {}, token);
       // Create download link
       const blob = new Blob([data.csv], { type: "text/csv" });

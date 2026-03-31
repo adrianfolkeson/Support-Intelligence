@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { batchAnalyzeChurnRisk } from "@/lib/db/churn-predictions";
 import { collectCustomerMetrics } from "@/lib/aurora-api";
 import { headers } from "next/headers";

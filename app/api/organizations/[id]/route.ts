@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireEnv } from "@/lib/error-handler";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 
 const updateOrganizationSchema = z.object({
   name: z.string().min(2).max(100).optional(),
@@ -17,12 +17,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    const { id } = await params;
+    const { userId, response } = await getAuthenticatedUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (response) {
+      return response;
     }
+
+    const { id } = await params;
 
     // Check if user is a member of this organization
     const orgUser = await prisma.organizationUser.findFirst({
@@ -66,12 +67,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    const { id } = await params;
+    const { userId, response } = await getAuthenticatedUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (response) {
+      return response;
     }
+
+    const { id } = await params;
 
     // Check if user is owner or admin
     const orgUser = await prisma.organizationUser.findFirst({
@@ -140,12 +142,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    const { id } = await params;
+    const { userId, response } = await getAuthenticatedUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (response) {
+      return response;
     }
+
+    const { id } = await params;
 
     // Check if user is owner
     const orgUser = await prisma.organizationUser.findFirst({

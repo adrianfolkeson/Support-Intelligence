@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
 
 // POST /api/admin/backup - Trigger database backup
 export async function POST() {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId, response } = await getAuthenticatedUser();
+    if (response) {
+      return response;
     }
 
     // TODO: Implement actual database backup

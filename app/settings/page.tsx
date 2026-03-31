@@ -1,7 +1,5 @@
 "use client";
 
-/* eslint-disable react-hooks/rules-of-hooks */
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link, CheckCircle, XCircle, RefreshCw } from "lucide-react";
@@ -12,30 +10,13 @@ import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { fetchAPI } from "@/lib/api";
 import { ToastProvider, useToast } from "@/components/ui/toast";
+import { createClient } from "@/lib/supabase/client";
 
 export const dynamic = 'force-dynamic';
 
 function SettingsContent() {
   const router = useRouter();
-
-  // Check if Clerk is properly configured (not placeholder keys)
-  const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('xxx') &&
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('_test_');
-
-  if (!isClerkConfigured) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Authentication Not Configured</h1>
-          <p className="text-gray-600">Please set up Clerk authentication to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { useAuth } = require("@clerk/nextjs");
-  const { getToken } = useAuth();
+  const supabase = createClient();
   const { showToast } = useToast();
 
   const [orgId, setOrgId] = useState<string | null>(null);
@@ -74,7 +55,10 @@ function SettingsContent() {
 
   const fetchSettings = async (id: string) => {
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       const data = await fetchAPI(`/api/organizations/${id}/settings`, {}, token);
 
       setSettings({
@@ -97,7 +81,10 @@ function SettingsContent() {
     if (!orgId) return;
     setSaving(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       await fetchAPI(
         `/api/organizations/${orgId}/settings`,
         {
@@ -120,7 +107,10 @@ function SettingsContent() {
     if (!orgId) return;
     setTesting(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       const data = await fetchAPI(
         `/api/organizations/${orgId}/test-zendesk`,
         { method: "POST" },
@@ -145,7 +135,10 @@ function SettingsContent() {
     if (!orgId) return;
     setSyncing(true);
     try {
-      const token = await getToken();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
       await fetchAPI(
         `/api/organizations/${orgId}/sync-zendesk`,
         { method: "POST" },

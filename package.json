@@ -12,7 +12,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.37.3",
+    "@supabase/ssr": "^0.10.0",
+    "@supabase/supabase-js": "^2.101.0",
     "@types/pino": "^7.0.4",
     "@types/stripe": "^8.0.416",
     "clsx": "^2.1.0",

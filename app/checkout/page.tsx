@@ -43,12 +43,18 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create checkout session");
+        console.error("Checkout API error:", data);
+        throw new Error(data.error || data.details || "Failed to create checkout session");
       }
 
       // Redirect to Stripe checkout
-      window.location.href = data.url;
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned from server");
+      }
     } catch (err: any) {
+      console.error("Checkout error:", err);
       setError(err.message || "Something went wrong. Please try again.");
       setIsLoading(false);
     }

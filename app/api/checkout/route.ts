@@ -14,6 +14,21 @@ export async function POST(request: Request) {
   const start = Date.now();
 
   try {
+    // Verify Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
+      console.error('Stripe configuration missing:', {
+        hasKey: !!process.env.STRIPE_SECRET_KEY,
+        hasPriceId: !!process.env.STRIPE_PRICE_ID,
+      });
+      return NextResponse.json(
+        {
+          error: 'Payment system is not configured. Please contact support.',
+          details: 'Stripe is not properly configured'
+        },
+        { status: 500 }
+      );
+    }
+
     const { userId, response } = await getAuthenticatedUser();
 
     if (response) {

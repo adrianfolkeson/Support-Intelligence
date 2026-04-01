@@ -9,6 +9,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Support Intelligence - AI-Powered Churn Prevention",
   description: "Predict customer churn before it happens with AI-powered support ticket analysis.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     title: "Support Intelligence",
     description: "AI-powered churn prevention for SaaS companies",

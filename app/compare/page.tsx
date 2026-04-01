@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, ArrowDown, CheckCircle2, X, TrendingDown, Clock, Zap, Shield, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";

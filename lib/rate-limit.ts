@@ -1,8 +1,45 @@
 import Redis from 'ioredis';
 import { RATE_LIMITS } from './constants';
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-const redis = new Redis(redisUrl);
+// Lazy Redis client initialization
+let redis: Redis | null = null;
+
+function getRedisClient(): Redis | null {
+  // Don't create Redis client during build time or on client-side
+  if (typeof window !== 'undefined') {
+    return null; // Client-side
+  }
+
+  if (process.env.NODE_ENV === 'production' && !process.env.REDIS_URL) {
+    return null; // No Redis URL configured in production
+  }
+
+  if (!redis && process.env.REDIS_URL) {
+    try {
+      redis = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => {
+          if (times > 3) return null;
+          return Math.min(times * 100, 3000);
+        },
+        // Don't connect immediately - connect on first use
+        lazyConnect: true,
+      });
+
+      redis.on('error', (err) => {
+        // Silently handle Redis errors - fall back to in-memory
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug('Redis connection error, using fallback:', err.message);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to create Redis client:', error);
+      return null;
+    }
+  }
+
+  return redis;
+}
 
 // Rate limit by IP + organization for multi-tenant
 export async function rateLimit({
@@ -14,21 +51,33 @@ export async function rateLimit({
   limit?: number;
   window?: number;
 }) {
-  const key = `ratelimit:${identifier}`;
-  const current = await redis.incr(key);
+  const client = getRedisClient();
 
-  if (current === 1) {
-    await redis.expire(key, window);
+  // If Redis is not available, use fallback
+  if (!client) {
+    return rateLimitFallback(identifier, limit, window);
   }
 
-  const remaining = Math.max(0, limit - current);
-  const resetTime = await redis.ttl(key);
+  try {
+    const key = `ratelimit:${identifier}`;
+    const current = await client.incr(key);
 
-  return {
-    success: current <= limit,
-    remaining,
-    reset: resetTime
-  };
+    if (current === 1) {
+      await client.expire(key, window);
+    }
+
+    const remaining = Math.max(0, limit - current);
+    const resetTime = await client.ttl(key);
+
+    return {
+      success: current <= limit,
+      remaining,
+      reset: resetTime
+    };
+  } catch (error) {
+    // If Redis fails, fall back to in-memory
+    return rateLimitFallback(identifier, limit, window);
+  }
 }
 
 // Fallback for local dev without Redis

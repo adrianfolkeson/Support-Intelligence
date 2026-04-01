@@ -22,45 +22,61 @@ export default function WelcomePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sessionId) {
-      router.push("/pricing");
-      return;
-    }
-
-    // Verify session and get organization ID
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const token = session?.access_token;
-      if (!token) {
-        setError("Not authenticated");
-        setLoading(false);
-        return;
+    // Get organization ID from cookie (set during checkout)
+    const getOrgIdFromCookie = () => {
+      const cookies = document.cookie.split(";");
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split("=");
+        if (name === "orgId" && value) {
+          return value;
+        }
       }
+      return null;
+    };
 
-      fetchAPI(`/api/stripe/session/${sessionId}/organization`, {}, token)
-        .then((data) => {
-          if (data.success && data.organizationId) {
-            setOrgId(data.organizationId);
-            // Store orgId in cookie for future use
-            document.cookie = `orgId=${data.organizationId}; path=/; max-age=2592000; SameSite=Lax`;
-          } else {
-            setError("Failed to verify checkout session");
-          }
-        })
-        .catch((err: Error) => {
-          console.error("Failed to verify session:", err);
-          if (err.message.includes("Payment not completed")) {
-            setError("Payment not completed. Please complete your payment to continue.");
-          } else if (err.message.includes("Invalid session")) {
-            setError("Invalid checkout session. Please try again.");
-          } else {
-            setError("Failed to verify checkout. Please contact support.");
-          }
-        })
-        .finally(() => {
+    const cookieOrgId = getOrgIdFromCookie();
+
+    if (cookieOrgId) {
+      setOrgId(cookieOrgId);
+      setLoading(false);
+    } else if (sessionId) {
+      // If there's a session_id, verify it (for Stripe checkout flow when enabled)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        const token = session?.access_token;
+        if (!token) {
+          setError("Not authenticated");
           setLoading(false);
-        });
-    });
-  }, [sessionId, router]);
+          return;
+        }
+
+        fetchAPI(`/api/stripe/session/${sessionId}/organization`, {}, token)
+          .then((data) => {
+            if (data.success && data.organizationId) {
+              setOrgId(data.organizationId);
+              document.cookie = `orgId=${data.organizationId}; path=/; max-age=2592000; SameSite=Lax`;
+            } else {
+              setError("Failed to verify checkout session");
+            }
+          })
+          .catch((err: Error) => {
+            console.error("Failed to verify session:", err);
+            if (err.message.includes("Payment not completed")) {
+              setError("Payment not completed. Please complete your payment to continue.");
+            } else if (err.message.includes("Invalid session")) {
+              setError("Invalid checkout session. Please try again.");
+            } else {
+              setError("Failed to verify checkout. Please contact support.");
+            }
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      });
+    } else {
+      // No orgId cookie and no session_id - redirect to pricing
+      router.push("/pricing");
+    }
+  }, [sessionId, router, supabase]);
 
   if (loading) {
     return (

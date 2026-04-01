@@ -1,34 +1,15 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { headers } from "next/headers";
 import { rateLimit } from "@/lib/rate-limit";
 import { checkoutSchema, formatZodError } from "@/lib/validations";
-import { handleAPIError, logRequest, logSecurityEvent, requireEnv } from "@/lib/error-handler";
+import { handleAPIError, logRequest, logSecurityEvent } from "@/lib/error-handler";
 import { getAuthenticatedUser } from "@/lib/supabase/auth-api";
-
-const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY'));
-
-const PRICE_ID = requireEnv('STRIPE_PRICE_ID');
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const start = Date.now();
 
   try {
-    // Verify Stripe is configured
-    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
-      console.error('Stripe configuration missing:', {
-        hasKey: !!process.env.STRIPE_SECRET_KEY,
-        hasPriceId: !!process.env.STRIPE_PRICE_ID,
-      });
-      return NextResponse.json(
-        {
-          error: 'Payment system is not configured. Please contact support.',
-          details: 'Stripe is not properly configured'
-        },
-        { status: 500 }
-      );
-    }
-
     const { userId, response } = await getAuthenticatedUser();
 
     if (response) {
@@ -86,37 +67,68 @@ export async function POST(request: Request) {
 
     const { organizationName } = validationResult.data;
 
-    const customer = await stripe.customers.create({
-      metadata: {
-        organization_id: userId,
-        organization_name: organizationName,
-        user_id: userId,
-      },
-    });
+    // Create organization directly (skip payment for now)
+    const supabase = await createClient();
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // Generate a unique slug from organization name
+    const baseSlug = organizationName
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customer.id,
-      mode: "subscription",
-      line_items: [
-        {
-          price: PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      success_url: `${appUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/pricing?canceled=true`,
-      metadata: {
-        organization_id: userId,
-      },
-      subscription_data: {
-        metadata: {
-          organization_id: userId,
-        },
-        trial_period_days: 30,
-      },
-    });
+    let slug = baseSlug;
+    let counter = 1;
+
+    // Check if slug exists and make it unique
+    while (true) {
+      const { data: existingOrg } = await supabase
+        .from('Organization')
+        .select('id')
+        .eq('slug', slug)
+        .single();
+
+      if (!existingOrg) {
+        break; // Slug is unique
+      }
+
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    // Create the organization
+    const { data: organization, error: orgError } = await supabase
+      .from('Organization')
+      .insert({
+        name: organizationName,
+        slug: slug,
+        supabaseUserId: userId,
+        plan: 'trial',
+        status: 'active',
+        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+      })
+      .select('id')
+      .single();
+
+    if (orgError || !organization) {
+      console.error('Failed to create organization:', orgError);
+      throw new Error('Failed to create organization. Please try again.');
+    }
+
+    // Add user as organization owner
+    const { error: memberError } = await supabase
+      .from('OrganizationUser')
+      .insert({
+        organizationId: organization.id,
+        userId: userId,
+        role: 'owner',
+      });
+
+    if (memberError) {
+      console.error('Failed to add user to organization:', memberError);
+      // Don't throw - org was created successfully
+    }
 
     logRequest({
       method: 'POST',
@@ -127,7 +139,14 @@ export async function POST(request: Request) {
       ip,
     });
 
-    return NextResponse.json({ url: session.url });
+    // Return success with organization info (skip Stripe checkout)
+    return NextResponse.json({
+      success: true,
+      organizationId: organization.id,
+      slug: slug,
+      redirectUrl: '/welcome'
+    });
+
   } catch (error: any) {
     return handleAPIError(error, {
       method: 'POST',

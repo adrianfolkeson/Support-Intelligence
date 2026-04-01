@@ -30,7 +30,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Call checkout API
+      // Call checkout API (now creates organization directly)
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
@@ -44,15 +44,17 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         console.error("Checkout API error:", data);
-        throw new Error(data.error || data.details || "Failed to create checkout session");
+        throw new Error(data.error || data.details || "Failed to create organization");
       }
 
-      // Redirect to Stripe checkout
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL returned from server");
+      // Store organization ID in cookie for future use
+      if (data.organizationId) {
+        document.cookie = `orgId=${data.organizationId}; path=/; max-age=2592000; SameSite=Lax`;
       }
+
+      // Redirect to welcome page (skip Stripe)
+      router.push("/welcome");
+      router.refresh();
     } catch (err: any) {
       console.error("Checkout error:", err);
       setError(err.message || "Something went wrong. Please try again.");

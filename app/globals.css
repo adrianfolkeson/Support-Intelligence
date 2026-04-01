@@ -99,7 +99,7 @@
 
   /* Links */
   a {
-    @apply underline-offset-2 decoration-2 underline-neutral-300;
+    @apply underline-offset-2 decoration-2 decoration-neutral-300 underline;
     transition: text-decoration-color 150ms ease;
   }
 
